@@ -4,6 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AuthService {
   final _googleSignIn = GoogleSignIn(
+    serverClientId: '1023212235678-ct0s7b7nmm48cbqlp3md6f0lqimapsp1.apps.googleusercontent.com',
     scopes: ['email', 'profile'],
   );
 
