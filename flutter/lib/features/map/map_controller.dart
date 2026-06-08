@@ -12,13 +12,14 @@ class MapController extends ChangeNotifier {
   bool get isTracking => _trackingService.isTracking;
   List<LatLng> get currentPath => _trackingService.points;
 
-  List<String> completedTerritories = [];
+  List<String> _completedTerritories = [];
+  List<String> get completedTerritories => List.unmodifiable(_completedTerritories);
 
   DateTime? _startedAt;
 
   Future<void> loadTerritories() async {
     final runs = await _repository.fetchRuns();
-    completedTerritories =
+    _completedTerritories =
         runs.map((r) => r.territoryGeoJson).where((g) => g.isNotEmpty).toList();
     notifyListeners();
   }
@@ -43,5 +44,6 @@ class MapController extends ChangeNotifier {
     );
 
     await loadTerritories();
+    _startedAt = null;
   }
 }

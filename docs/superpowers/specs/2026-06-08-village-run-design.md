@@ -85,9 +85,12 @@ new_total = ST_Union(user_territory.merged_territory, run_territory)
 ## 데이터 모델
 
 ```sql
--- 유저 (익명, 회원가입 없음)
+-- 유저 (Supabase Auth - Google OAuth)
 users
-  id          uuid        PK  -- 앱 최초 실행 시 생성, 기기에 저장
+  id          uuid        PK  -- Supabase auth.users.id
+  email       text
+  display_name text
+  avatar_url  text
   created_at  timestamptz
 
 -- 러닝 회차
@@ -111,7 +114,8 @@ user_territory
 ```
 
 ### 인증 및 보안
-- 회원가입 없음 — 앱 최초 실행 시 익명 UUID 생성, SharedPreferences에 저장
+- **Google OAuth** — Supabase Auth 내장 Google 로그인 사용
+- 앱 최초 실행 시 Google 로그인 화면 → Supabase 세션 발급
 - Row Level Security:
   - `runs`: `user_id = auth.uid()` 일 때만 INSERT/UPDATE
   - `user_territory`: 동일 조건으로 쓰기 제한
@@ -127,7 +131,8 @@ user_territory
 | `flutter_map` | OSM 지도 렌더링 |
 | `geolocator` | GPS 위치 추적 |
 | `latlong2` | 좌표 계산 |
-| `supabase_flutter` | DB 연동 |
+| `supabase_flutter` | DB 연동 + Google OAuth |
+| `google_sign_in` | Google 로그인 |
 | `share_plus` | 링크 공유 |
 
 ### 백엔드

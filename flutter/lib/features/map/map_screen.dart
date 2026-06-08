@@ -149,7 +149,8 @@ class _MapScreenState extends State<MapScreen> {
         borderColor: const Color(0xFF4285F4),
         borderStrokeWidth: 1.5,
       );
-    } catch (_) {
+    } catch (e, st) {
+      debugPrint('_geoJsonToPolygon: $e\n$st');
       return null;
     }
   }
