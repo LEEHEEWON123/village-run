@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Village Run — 내 땅</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; display: flex; height: 100vh; }
+    #map { flex: 1; }
+    #sidebar {
+      width: 280px; background: #fff; overflow-y: auto;
+      border-left: 1px solid #eee; display: flex; flex-direction: column;
+    }
+    #sidebar-header {
+      padding: 16px; border-bottom: 1px solid #eee;
+      font-size: 18px; font-weight: 700;
+    }
+    #sidebar-subtitle { font-size: 12px; color: #888; margin-top: 2px; }
+    .run-card {
+      padding: 12px 16px; border-bottom: 1px solid #f0f0f0;
+      cursor: pointer; transition: background 0.1s;
+    }
+    .run-card:hover { background: #f5f8ff; }
+    .run-card.active { background: #e8f0fe; border-left: 3px solid #4285F4; }
+    .run-date { font-weight: 600; font-size: 14px; }
+    .run-meta { font-size: 12px; color: #666; margin-top: 2px; }
+    #error-msg {
+      padding: 24px 16px; color: #d32f2f; font-size: 14px; display: none;
+    }
+    @media (max-width: 600px) {
+      body { flex-direction: column; }
+      #map { flex: none; height: 60vh; }
+      #sidebar { width: 100%; height: 40vh; border-left: none; border-top: 1px solid #eee; }
+    }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+  <div id="sidebar">
+    <div id="sidebar-header">
+      Village Run
+      <div id="sidebar-subtitle">불러오는 중...</div>
+    </div>
+    <div id="error-msg"></div>
+    <div id="run-list"></div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://pvswjoyezmvmnveeacji.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB2c3dqb3llem12bW52ZWVhY2ppIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA4NTk4NTEsImV4cCI6MjA5NjQzNTg1MX0.UbhVi-qLPJ4tmcxG5GPVEa4SY82mUJTYrbdTqZl8yFk';
+
+    const map = L.map('map').setView([37.5665, 126.9780], 13);
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© <a href="https://openstreetmap.org">OpenStreetMap</a> contributors'
+    }).addTo(map);
+
+    const userId = location.pathname.split('/share/')[1];
+    const layers = {};
+    const allBounds = [];
+
+    function showError(msg) {
+      const el = document.getElementById('error-msg');
+      el.textContent = msg;
+      el.style.display = 'block';
+      document.getElementById('sidebar-subtitle').textContent = '오류 발생';
+    }
+
+    async function load() {
+      if (!userId) {
+        showError('사용자 ID가 없습니다.');
+        return;
+      }
+
+      let runs;
+      try {
+        const res = await fetch(
+          `${SUPABASE_URL}/rest/v1/runs?user_id=eq.${userId}&select=id,started_at,ended_at,distance_m,area_m2,territory_geojson&order=started_at.desc`,
+          {
+            headers: {
+              'apikey': SUPABASE_KEY,
+              'Authorization': `Bearer ${SUPABASE_KEY}`
+            }
+          }
+        );
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        runs = await res.json();
+      } catch (e) {
+        showError(`데이터를 불러오지 못했습니다: ${e.message}`);
+        return;
+      }
+
+      const totalArea = runs.reduce((s, r) => s + (r.area_m2 || 0), 0);
+      document.getElementById('sidebar-subtitle').textContent =
+        `총 ${formatArea(totalArea)} 점령`;
+
+      const list = document.getElementById('run-list');
+
+      if (runs.length === 0) {
+        list.innerHTML = '<p style="padding:16px;color:#888;font-size:13px;">아직 기록이 없습니다.</p>';
+        return;
+      }
+
+      runs.forEach(run => {
+        if (run.territory_geojson) {
+          try {
+            const geom = JSON.parse(run.territory_geojson);
+            const layer = L.geoJSON(geom, {
+              style: {
+                color: '#4285F4',
+                fillColor: '#4285F4',
+                fillOpacity: 0.35,
+                weight: 1.5
+              }
+            }).addTo(map);
+            layers[run.id] = layer;
+            allBounds.push(layer.getBounds());
+          } catch (e) {
+            console.warn('GeoJSON parse error for run', run.id, e);
+          }
+        }
+
+        const card = document.createElement('div');
+        card.className = 'run-card';
+        card.dataset.id = run.id;
+        const d = new Date(run.started_at);
+        card.innerHTML = `
+          <div class="run-date">${d.getMonth()+1}/${d.getDate()} ${pad(d.getHours())}:${pad(d.getMinutes())}</div>
+          <div class="run-meta">이동 ${formatDist(run.distance_m)} | 점령 ${formatArea(run.area_m2)}</div>
+        `;
+        card.onclick = () => focusRun(run.id);
+        list.appendChild(card);
+      });
+
+      if (allBounds.length > 0) {
+        const combined = allBounds.reduce((a, b) => a.extend(b));
+        map.fitBounds(combined, { padding: [20, 20] });
+      }
+    }
+
+    function focusRun(id) {
+      document.querySelectorAll('.run-card').forEach(c => c.classList.remove('active'));
+      const activeCard = document.querySelector(`.run-card[data-id="${id}"]`);
+      if (activeCard) activeCard.classList.add('active');
+
+      Object.entries(layers).forEach(([lid, layer]) => {
+        layer.setStyle(lid === id
+          ? { fillOpacity: 0.6, weight: 2.5 }
+          : { fillOpacity: 0.2, weight: 1 });
+      });
+
+      if (layers[id]) map.fitBounds(layers[id].getBounds(), { padding: [40, 40] });
+    }
+
+    function pad(n) { return String(n).padStart(2, '0'); }
+
+    function formatArea(m2) {
+      if (!m2) return '0 m²';
+      if (m2 >= 1e6) return `${(m2/1e6).toFixed(2)} km²`;
+      if (m2 >= 10000) return `${(m2/10000).toFixed(1)} 만m²`;
+      return `${Math.round(m2)} m²`;
+    }
+
+    function formatDist(m) {
+      if (!m) return '0 m';
+      return m >= 1000 ? `${(m/1000).toFixed(1)} km` : `${Math.round(m)} m`;
+    }
+
+    load();
+  </script>
+</body>
+</html>
