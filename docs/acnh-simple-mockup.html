@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>나온김에 런 — Simple AC UI</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+
+:root {
+  --green-dark:   #3d7a28;
+  --green:        #5aaa38;
+  --green-light:  #88cc60;
+  --green-pale:   #d8f0b8;
+  --cream:        #fffde8;
+  --cream-dark:   #f0eed8;
+  --yellow:       #ffd84a;
+  --yellow-dark:  #e0a820;
+  --red:          #e85030;
+  --red-dark:     #b83010;
+  --text-dark:    #2a4a18;
+  --text-mid:     #5a8040;
+  --text-soft:    #90b870;
+  --border:       #c0da90;
+  --shadow:       #a0c060;
+  --bg:           #eef8dc;
+}
+
+body {
+  background: var(--bg);
+  font-family: 'Nunito', sans-serif;
+  min-height: 100vh;
+}
+
+.page-header {
+  text-align: center;
+  padding: 40px 0 32px;
+}
+
+.page-header h1 {
+  font-size: 20px;
+  font-weight: 900;
+  color: var(--green-dark);
+}
+
+.page-header p {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-soft);
+  margin-top: 4px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.screens {
+  display: flex;
+  gap: 28px;
+  padding: 0 40px 60px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.screen-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.screen-label {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--text-mid);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+/* ── Phone ── */
+.phone {
+  width: 240px;
+  height: 500px;
+  border-radius: 44px;
+  background: var(--cream);
+  border: 2.5px solid var(--border);
+  position: relative;
+  overflow: hidden;
+  box-shadow:
+    0 6px 0 var(--shadow),
+    0 10px 32px rgba(80,140,40,0.15);
+}
+
+/* status bar */
+.sbar {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 36px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 0 20px 6px;
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--text-dark);
+  z-index: 20;
+}
+
+/* ══════════════════════════════
+   SCREEN 1 — LOGIN
+══════════════════════════════ */
+.s-login {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, #d8f2ff 0%, #e8f8d4 45%, var(--cream) 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 36px 28px 32px;
+}
+
+.login-icon-wrap {
+  width: 72px; height: 72px;
+  border-radius: 24px;
+  background: linear-gradient(145deg, #7acc50, #50aa28);
+  border: 2.5px solid #3a8a18;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 34px;
+  box-shadow: 0 5px 0 #2a6a10, 0 8px 20px rgba(80,160,40,0.25);
+  margin-top: 36px;
+  animation: iconFloat 3s ease-in-out infinite;
+}
+
+@keyframes iconFloat {
+  0%,100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+.login-app-name {
+  font-size: 22px;
+  font-weight: 900;
+  color: var(--green-dark);
+  margin-top: 20px;
+  letter-spacing: -0.5px;
+}
+
+.login-tagline {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-soft);
+  margin-top: 5px;
+  margin-bottom: 40px;
+}
+
+.btn-google {
+  width: 100%;
+  padding: 14px 0;
+  border-radius: 18px;
+  background: #fff;
+  border: 2px solid #d8d8d0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 800;
+  color: #333;
+  box-shadow: 0 4px 0 #c8c8c0;
+  cursor: pointer;
+}
+
+.g-logo {
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: conic-gradient(#ea4335 90deg,#fbbc05 0 180deg,#34a853 0 270deg,#4285f4 0);
+  flex-shrink: 0;
+}
+
+.login-footer {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 52px;
+  background: linear-gradient(180deg, #88cc60, #60aa38);
+  border-radius: 0 0 42px 42px;
+}
+
+
+/* ══════════════════════════════
+   MAP BASE (screens 2 & 3)
+══════════════════════════════ */
+.s-map {
+  position: absolute;
+  inset: 0;
+  background: #c8e8a0;
+  background-image:
+    linear-gradient(rgba(100,160,60,0.12) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(100,160,60,0.12) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+
+.map-road-h {
+  position: absolute;
+  left: 0; right: 0;
+  height: 12px;
+  background: rgba(210,190,150,0.65);
+  border-top: 1px solid rgba(180,160,120,0.4);
+  border-bottom: 1px solid rgba(180,160,120,0.4);
+}
+
+.map-road-v {
+  position: absolute;
+  top: 0; bottom: 0;
+  width: 12px;
+  background: rgba(210,190,150,0.65);
+  border-left: 1px solid rgba(180,160,120,0.4);
+  border-right: 1px solid rgba(180,160,120,0.4);
+}
+
+/* top nav bar */
+.nav {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 60px;
+  background: rgba(255,253,235,0.95);
+  border-bottom: 1.5px solid rgba(192,218,144,0.5);
+  display: flex;
+  align-items: flex-end;
+  padding: 0 14px 10px;
+  gap: 8px;
+  z-index: 15;
+  backdrop-filter: blur(4px);
+}
+
+.nav-title {
+  font-size: 16px;
+  font-weight: 900;
+  color: var(--green-dark);
+  flex: 1;
+}
+
+.nav-btn {
+  width: 34px; height: 34px;
+  border-radius: 12px;
+  background: #fff;
+  border: 2px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  box-shadow: 0 3px 0 var(--shadow);
+  flex-shrink: 0;
+}
+
+/* bottom sheet */
+.bottom {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  padding: 16px 16px 28px;
+  background: linear-gradient(0deg, rgba(255,253,235,1) 60%, transparent 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  z-index: 15;
+}
+
+/* FAB location */
+.fab-loc {
+  position: absolute;
+  right: 14px;
+  bottom: 96px;
+  width: 44px; height: 44px;
+  border-radius: 16px;
+  background: #fff;
+  border: 2px solid var(--border);
+  box-shadow: 0 4px 0 var(--shadow);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  z-index: 15;
+}
+
+/* RUN button */
+.btn-run {
+  width: 100%;
+  padding: 15px 0;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 900;
+  font-family: 'Nunito', sans-serif;
+  cursor: pointer;
+  letter-spacing: 0.2px;
+}
+
+.btn-run.go {
+  background: linear-gradient(180deg, #74d444, #50b828);
+  color: #fff;
+  border: 2.5px solid #389018;
+  box-shadow: 0 5px 0 #287010, 0 8px 24px rgba(80,180,40,0.25);
+  text-shadow: 0 1px 2px rgba(0,0,0,0.15);
+}
+
+.btn-run.stop {
+  background: linear-gradient(180deg, #ff7050, #e84028);
+  color: #fff;
+  border: 2.5px solid #c02810;
+  box-shadow: 0 5px 0 #901808, 0 8px 24px rgba(200,60,30,0.25);
+  text-shadow: 0 1px 2px rgba(0,0,0,0.15);
+}
+
+/* player */
+.player {
+  position: absolute;
+  z-index: 10;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.player-ring {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: rgba(80,200,80,0.2);
+  border: 1.5px solid rgba(80,200,80,0.4);
+  display: flex; align-items: center; justify-content: center;
+  animation: pring 1.8s ease-in-out infinite;
+}
+
+@keyframes pring {
+  0%,100% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.4); opacity: 0.3; }
+}
+
+.player-dot {
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  background: var(--green);
+  border: 2px solid #fff;
+  box-shadow: 0 2px 6px rgba(80,180,60,0.5);
+  position: absolute;
+}
+
+/* stat chips */
+.stat-row {
+  display: flex;
+  gap: 7px;
+  width: 100%;
+}
+
+.chip {
+  flex: 1;
+  background: #fff;
+  border: 2px solid var(--border);
+  border-radius: 14px;
+  padding: 8px 4px;
+  text-align: center;
+  box-shadow: 0 3px 0 var(--shadow);
+}
+
+.chip-num {
+  font-size: 15px;
+  font-weight: 900;
+  color: var(--text-dark);
+}
+
+.chip-lbl {
+  font-size: 9px;
+  font-weight: 800;
+  color: var(--text-soft);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-top: 1px;
+}
+
+
+/* ══════════════════════════════
+   SCREEN 4 — HISTORY
+══════════════════════════════ */
+.s-history {
+  position: absolute;
+  inset: 0;
+  background: var(--cream);
+  display: flex;
+  flex-direction: column;
+  padding-top: 60px;
+}
+
+.history-summary {
+  margin: 0 14px 10px;
+  background: linear-gradient(135deg, #6ab840, #4a9828);
+  border-radius: 18px;
+  padding: 13px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 4px 0 #3a7818, 0 6px 16px rgba(80,160,40,0.2);
+}
+
+.summary-left .lbl {
+  font-size: 10px;
+  font-weight: 800;
+  color: rgba(255,255,255,0.7);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.summary-left .val {
+  font-size: 22px;
+  font-weight: 900;
+  color: #fff;
+  margin-top: 1px;
+}
+
+.summary-right {
+  text-align: right;
+}
+
+.summary-right .lbl2 {
+  font-size: 10px;
+  font-weight: 800;
+  color: rgba(255,255,255,0.7);
+}
+
+.summary-right .val2 {
+  font-size: 14px;
+  font-weight: 900;
+  color: #fff;
+  margin-top: 1px;
+}
+
+.history-list {
+  flex: 1;
+  overflow: hidden;
+  padding: 0 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.run-card {
+  background: #fff;
+  border: 2px solid var(--border);
+  border-radius: 16px;
+  padding: 11px 13px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 3px 0 var(--shadow);
+}
+
+.card-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: var(--green-light);
+  border: 2px solid var(--green);
+  flex-shrink: 0;
+}
+
+.card-date {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-soft);
+}
+
+.card-dist {
+  font-size: 17px;
+  font-weight: 900;
+  color: var(--text-dark);
+  margin-top: 1px;
+}
+
+.card-dist span {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-soft);
+}
+
+.card-area {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-soft);
+  margin-top: 1px;
+}
+
+.card-info { flex: 1; }
+
+.card-share {
+  width: 30px; height: 30px;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #fce060, #f0c020);
+  border: 2px solid #d09810;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  box-shadow: 0 3px 0 #b07808;
+  flex-shrink: 0;
+  color: #7a4800;
+  font-weight: 900;
+}
+
+
+/* ══════════════════════════════
+   SCREEN 5 — SHARE WEB
+══════════════════════════════ */
+.s-share {
+  position: absolute;
+  inset: 0;
+  background: #c8e8a0;
+  background-image:
+    linear-gradient(rgba(100,160,60,0.12) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(100,160,60,0.12) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+
+.share-bottom {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  background: var(--cream);
+  border-top: 2px solid var(--border);
+  border-radius: 0 0 42px 42px;
+  padding: 16px 14px 22px;
+  z-index: 10;
+}
+
+.share-profile {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  margin-bottom: 12px;
+}
+
+.share-avatar {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #80cc50, #50aa28);
+  border: 2.5px solid #fff;
+  box-shadow: 0 3px 0 var(--shadow);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.share-name {
+  font-size: 14px;
+  font-weight: 900;
+  color: var(--text-dark);
+}
+
+.share-sub {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-soft);
+  margin-top: 2px;
+}
+
+.share-stats {
+  display: flex;
+  gap: 7px;
+}
+
+.share-stat {
+  flex: 1;
+  background: #fff;
+  border: 2px solid var(--border);
+  border-radius: 13px;
+  padding: 8px 4px;
+  text-align: center;
+  box-shadow: 0 3px 0 var(--shadow);
+}
+
+.ss-num {
+  font-size: 15px;
+  font-weight: 900;
+  color: var(--text-dark);
+}
+
+.ss-lbl {
+  font-size: 8px;
+  font-weight: 800;
+  color: var(--text-soft);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-top: 1px;
+}
+
+.url-pill {
+  position: absolute;
+  top: 44px; left: 12px; right: 12px;
+  background: rgba(255,253,235,0.92);
+  border: 2px solid var(--border);
+  border-radius: 20px;
+  padding: 6px 12px;
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--text-mid);
+  text-align: center;
+  z-index: 11;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>🍃 나온김에 런</h1>
+  <p>Simple · Cute · App-like</p>
+</div>
+
+<div class="screens">
+
+  <!-- ① 로그인 -->
+  <div class="screen-wrap">
+    <div class="phone">
+      <div class="s-login">
+        <div class="login-icon-wrap">🏃</div>
+        <div class="login-app-name">나온김에 런</div>
+        <div class="login-tagline">걷고 달리며 땅따먹기</div>
+        <div class="btn-google">
+          <div class="g-logo"></div>
+          Google로 시작하기
+        </div>
+      </div>
+      <div class="login-footer"></div>
+    </div>
+    <div class="screen-label">로그인</div>
+  </div>
+
+  <!-- ② 지도 (대기) -->
+  <div class="screen-wrap">
+    <div class="phone">
+      <div class="s-map">
+        <div class="map-road-h" style="top:180px"></div>
+        <div class="map-road-v" style="left:108px"></div>
+        <svg width="240" height="500" viewBox="0 0 240 500" style="position:absolute;inset:0;z-index:4">
+          <defs>
+            <filter id="g1">
+              <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="rgba(80,150,40,0.25)"/>
+            </filter>
+          </defs>
+          <polygon points="62,205 90,168 136,162 176,184 184,238 162,274 112,283 68,258"
+            fill="rgba(100,190,60,0.28)" stroke="#6ab840" stroke-width="2"
+            stroke-linejoin="round" filter="url(#g1)"/>
+          <polygon points="115,250 138,238 162,244 168,268 146,280 116,273"
+            fill="rgba(130,200,70,0.22)" stroke="#80b840" stroke-width="1.5"
+            stroke-linejoin="round"/>
+        </svg>
+      </div>
+
+      <div class="nav">
+        <div class="nav-title">나온김에 런</div>
+        <div class="nav-btn">📋</div>
+      </div>
+
+      <!-- player -->
+      <div class="player" style="top:43%;left:46%">
+        <div class="player-ring"></div>
+        <div class="player-dot"></div>
+      </div>
+
+      <div class="fab-loc">📍</div>
+
+      <div class="bottom">
+        <div class="btn-run go">▶ &nbsp;달리기 시작</div>
+      </div>
+    </div>
+    <div class="screen-label">지도 (대기)</div>
+  </div>
+
+  <!-- ③ 트래킹 -->
+  <div class="screen-wrap">
+    <div class="phone">
+      <div class="s-map">
+        <div class="map-road-h" style="top:180px"></div>
+        <div class="map-road-v" style="left:108px"></div>
+        <svg width="240" height="500" viewBox="0 0 240 500" style="position:absolute;inset:0;z-index:4">
+          <defs>
+            <filter id="g2">
+              <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="rgba(80,150,40,0.25)"/>
+            </filter>
+            <filter id="pf">
+              <feDropShadow dx="0" dy="1" stdDeviation="2" flood-color="rgba(255,140,0,0.4)"/>
+            </filter>
+          </defs>
+          <polygon points="62,205 90,168 136,162 176,184 184,238 162,274 112,283 68,258"
+            fill="rgba(100,190,60,0.28)" stroke="#6ab840" stroke-width="2"
+            stroke-linejoin="round" filter="url(#g2)"/>
+          <polyline points="120,268 132,250 144,233 153,216 158,198 150,183"
+            fill="none" stroke="#ff9030" stroke-width="3"
+            stroke-linecap="round" stroke-linejoin="round"
+            stroke-dasharray="6,4" filter="url(#pf)"/>
+          <circle cx="150" cy="183" r="10" fill="rgba(80,200,80,0.2)"/>
+          <circle cx="150" cy="183" r="6" fill="#50c050" stroke="white" stroke-width="2"/>
+        </svg>
+      </div>
+
+      <div class="nav">
+        <div class="nav-title" style="color:#e85030">● 기록 중</div>
+      </div>
+
+      <div class="fab-loc">📍</div>
+
+      <div class="bottom">
+        <div class="stat-row">
+          <div class="chip">
+            <div class="chip-num">2.34</div>
+            <div class="chip-lbl">km</div>
+          </div>
+          <div class="chip">
+            <div class="chip-num">18:42</div>
+            <div class="chip-lbl">time</div>
+          </div>
+          <div class="chip">
+            <div class="chip-num">3,241</div>
+            <div class="chip-lbl">m²</div>
+          </div>
+        </div>
+        <div class="btn-run stop">■ &nbsp;완료</div>
+      </div>
+    </div>
+    <div class="screen-label">트래킹 중</div>
+  </div>
+
+  <!-- ④ 기록 -->
+  <div class="screen-wrap">
+    <div class="phone">
+      <div class="s-history">
+        <div class="nav" style="position:relative;height:auto;background:none;border:none;padding:0 14px 10px">
+          <div class="nav-title">기록</div>
+        </div>
+
+        <div class="history-summary">
+          <div class="summary-left">
+            <div class="lbl">총 거리</div>
+            <div class="val">28.4 km</div>
+          </div>
+          <div class="summary-right">
+            <div class="lbl2">총 점령 면적</div>
+            <div class="val2">24,394 m²</div>
+          </div>
+        </div>
+
+        <div class="history-list">
+          <div class="run-card">
+            <div class="card-dot"></div>
+            <div class="card-info">
+              <div class="card-date">2026년 6월 8일</div>
+              <div class="card-dist">5.2 <span>km</span></div>
+              <div class="card-area">4,812 m² 점령</div>
+            </div>
+            <div class="card-share">↗</div>
+          </div>
+
+          <div class="run-card">
+            <div class="card-dot"></div>
+            <div class="card-info">
+              <div class="card-date">2026년 6월 6일</div>
+              <div class="card-dist">3.8 <span>km</span></div>
+              <div class="card-area">2,340 m² 점령</div>
+            </div>
+            <div class="card-share">↗</div>
+          </div>
+
+          <div class="run-card">
+            <div class="card-dot"></div>
+            <div class="card-info">
+              <div class="card-date">2026년 6월 4일</div>
+              <div class="card-dist">7.1 <span>km</span></div>
+              <div class="card-area">8,091 m² 점령</div>
+            </div>
+            <div class="card-share">↗</div>
+          </div>
+
+          <div class="run-card" style="opacity:0.5">
+            <div class="card-dot"></div>
+            <div class="card-info">
+              <div class="card-date">2026년 6월 1일</div>
+              <div class="card-dist">4.0 <span>km</span></div>
+              <div class="card-area">3,150 m² 점령</div>
+            </div>
+            <div class="card-share">↗</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="screen-label">기록</div>
+  </div>
+
+  <!-- ⑤ 공유 웹 -->
+  <div class="screen-wrap">
+    <div class="phone">
+      <div class="s-share">
+        <div class="map-road-h" style="top:150px"></div>
+        <div class="map-road-v" style="left:120px"></div>
+        <svg width="240" height="500" viewBox="0 0 240 500" style="position:absolute;inset:0;z-index:4">
+          <defs>
+            <filter id="g3">
+              <feDropShadow dx="0" dy="3" stdDeviation="5" flood-color="rgba(80,150,40,0.2)"/>
+            </filter>
+          </defs>
+          <polygon points="48,122 80,88 138,82 192,108 206,162 188,208 136,226 76,214 52,178"
+            fill="rgba(100,190,60,0.28)" stroke="#6ab840" stroke-width="2"
+            stroke-linejoin="round" filter="url(#g3)"/>
+          <polygon points="82,175 106,162 150,168 165,192 156,218 118,228 86,216"
+            fill="rgba(130,200,70,0.2)" stroke="#80b840" stroke-width="1.5"
+            stroke-linejoin="round"/>
+          <polygon points="150,115 178,104 198,120 194,148 162,158 144,142"
+            fill="rgba(100,180,230,0.18)" stroke="#70aad8" stroke-width="1.5"
+            stroke-linejoin="round"/>
+        </svg>
+
+        <div class="url-pill">village-run-app.web.app/share/heewon</div>
+      </div>
+
+      <div class="share-bottom">
+        <div class="share-profile">
+          <div class="share-avatar">🏃</div>
+          <div>
+            <div class="share-name">heewon</div>
+            <div class="share-sub">총 24,394 m² 점령</div>
+          </div>
+        </div>
+        <div class="share-stats">
+          <div class="share-stat">
+            <div class="ss-num">12</div>
+            <div class="ss-lbl">runs</div>
+          </div>
+          <div class="share-stat">
+            <div class="ss-num">28.4</div>
+            <div class="ss-lbl">km</div>
+          </div>
+          <div class="share-stat">
+            <div class="ss-num">24k</div>
+            <div class="ss-lbl">m²</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="screen-label">공유 웹</div>
+  </div>
+
+</div>
+</body>
+</html>

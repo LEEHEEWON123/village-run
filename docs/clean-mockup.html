@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>나온김에 런</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  background: #f2f4f0;
+  font-family: 'Nunito', sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 48px 24px 64px;
+  gap: 40px;
+}
+
+.row {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.label {
+  font-size: 11px;
+  font-weight: 800;
+  color: #a0b090;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+
+/* Phone */
+.phone {
+  width: 235px;
+  height: 490px;
+  border-radius: 42px;
+  background: #fff;
+  border: 2px solid #e0e8d8;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(80,120,40,0.12);
+}
+
+/* ─── COLORS ─── */
+/* primary: #5c9e3a  soft green */
+/* bg: #f7faf3 */
+/* card bg: #fff */
+/* text: #1e2e14 */
+/* sub: #8aaa70 */
+
+/* ══ LOGIN ══ */
+.login {
+  position: absolute; inset: 0;
+  background: #f7faf3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0 28px;
+  gap: 0;
+}
+
+.login-mark {
+  width: 68px; height: 68px;
+  border-radius: 22px;
+  background: #5c9e3a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  margin-bottom: 18px;
+  box-shadow: 0 4px 16px rgba(92,158,58,0.35);
+}
+
+.login-name {
+  font-size: 22px;
+  font-weight: 900;
+  color: #1e2e14;
+  letter-spacing: -0.5px;
+}
+
+.login-desc {
+  font-size: 13px;
+  font-weight: 700;
+  color: #8aaa70;
+  margin-top: 5px;
+  margin-bottom: 36px;
+}
+
+.btn-google {
+  width: 100%;
+  padding: 14px;
+  border-radius: 16px;
+  background: #fff;
+  border: 1.5px solid #e0e0d8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 800;
+  color: #2a3a20;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.g-dot {
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: conic-gradient(#ea4335 90deg,#fbbc05 0 180deg,#34a853 0 270deg,#4285f4 0);
+  flex-shrink: 0;
+}
+
+/* ══ MAP ══ */
+.map-bg {
+  position: absolute; inset: 0;
+  background: #dceecb;
+  background-image:
+    linear-gradient(rgba(80,140,40,0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(80,140,40,0.08) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+.road-h {
+  position: absolute;
+  left: 0; right: 0; height: 11px;
+  background: rgba(205,188,150,0.7);
+}
+
+.road-v {
+  position: absolute;
+  top: 0; bottom: 0; width: 11px;
+  background: rgba(205,188,150,0.7);
+}
+
+/* top bar on map */
+.bar {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 58px;
+  background: rgba(255,255,255,0.96);
+  border-bottom: 1px solid rgba(200,220,180,0.6);
+  display: flex;
+  align-items: flex-end;
+  padding: 0 14px 10px;
+  gap: 8px;
+  z-index: 10;
+}
+
+.bar-title {
+  font-size: 16px;
+  font-weight: 900;
+  color: #1e2e14;
+  flex: 1;
+}
+
+.bar-title.rec {
+  color: #d94020;
+}
+
+.bar-icon {
+  width: 33px; height: 33px;
+  border-radius: 11px;
+  background: #f2f4f0;
+  border: 1.5px solid #dce8d0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+}
+
+/* bottom panel */
+.panel {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  background: rgba(255,255,255,0.97);
+  border-top: 1px solid rgba(200,220,180,0.5);
+  padding: 14px 14px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  z-index: 10;
+}
+
+.loc-fab {
+  position: absolute;
+  right: 12px;
+  bottom: 90px;
+  width: 42px; height: 42px;
+  border-radius: 14px;
+  background: #fff;
+  border: 1.5px solid #dce8d0;
+  box-shadow: 0 3px 12px rgba(0,0,0,0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 17px;
+  z-index: 10;
+}
+
+.btn-start {
+  width: 100%;
+  padding: 15px;
+  border-radius: 18px;
+  background: #5c9e3a;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 900;
+  font-family: 'Nunito', sans-serif;
+  text-align: center;
+  box-shadow: 0 4px 16px rgba(92,158,58,0.35);
+  letter-spacing: 0.2px;
+}
+
+.btn-stop {
+  width: 100%;
+  padding: 15px;
+  border-radius: 18px;
+  background: #e04828;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 900;
+  font-family: 'Nunito', sans-serif;
+  text-align: center;
+  box-shadow: 0 4px 16px rgba(200,60,30,0.3);
+  letter-spacing: 0.2px;
+}
+
+/* player dot */
+.dot-wrap {
+  position: absolute;
+  z-index: 8;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.dot-pulse {
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  background: rgba(92,158,58,0.18);
+  display: flex; align-items: center; justify-content: center;
+  animation: pp 1.8s ease-in-out infinite;
+}
+
+@keyframes pp {
+  0%,100% { transform: scale(1); }
+  50% { transform: scale(1.5); opacity: 0.4; }
+}
+
+.dot-core {
+  width: 11px; height: 11px;
+  border-radius: 50%;
+  background: #5c9e3a;
+  border: 2px solid #fff;
+  box-shadow: 0 2px 6px rgba(92,158,58,0.5);
+  position: absolute;
+}
+
+/* stat chips */
+.chips {
+  display: flex;
+  gap: 7px;
+  width: 100%;
+}
+
+.chip {
+  flex: 1;
+  background: #f7faf3;
+  border: 1.5px solid #dce8d0;
+  border-radius: 13px;
+  padding: 8px 4px;
+  text-align: center;
+}
+
+.chip-n {
+  font-size: 15px;
+  font-weight: 900;
+  color: #1e2e14;
+}
+
+.chip-l {
+  font-size: 9px;
+  font-weight: 800;
+  color: #8aaa70;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-top: 1px;
+}
+
+/* ══ HISTORY ══ */
+.history {
+  position: absolute; inset: 0;
+  background: #f7faf3;
+  display: flex;
+  flex-direction: column;
+  padding-top: 58px;
+}
+
+.hist-top {
+  padding: 14px 14px 10px;
+}
+
+.hist-title {
+  font-size: 22px;
+  font-weight: 900;
+  color: #1e2e14;
+}
+
+.hist-sub {
+  font-size: 12px;
+  font-weight: 700;
+  color: #8aaa70;
+  margin-top: 3px;
+}
+
+.hist-list {
+  flex: 1;
+  overflow: hidden;
+  padding: 4px 14px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.card {
+  background: #fff;
+  border: 1.5px solid #e8f0e0;
+  border-radius: 16px;
+  padding: 12px 13px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 2px 8px rgba(80,120,40,0.06);
+}
+
+.card-bar {
+  width: 4px;
+  height: 36px;
+  border-radius: 2px;
+  background: #5c9e3a;
+  flex-shrink: 0;
+}
+
+.card-body { flex: 1; }
+
+.card-date {
+  font-size: 10px;
+  font-weight: 800;
+  color: #8aaa70;
+  letter-spacing: 0.3px;
+}
+
+.card-km {
+  font-size: 18px;
+  font-weight: 900;
+  color: #1e2e14;
+  margin-top: 2px;
+}
+
+.card-km span {
+  font-size: 11px;
+  font-weight: 700;
+  color: #8aaa70;
+}
+
+.card-m2 {
+  font-size: 11px;
+  font-weight: 700;
+  color: #8aaa70;
+}
+
+.card-share {
+  width: 30px; height: 30px;
+  border-radius: 10px;
+  background: #f7faf3;
+  border: 1.5px solid #dce8d0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  color: #5c9e3a;
+  font-weight: 900;
+  flex-shrink: 0;
+}
+
+/* ══ SHARE ══ */
+.share-map {
+  position: absolute; inset: 0;
+  background: #dceecb;
+  background-image:
+    linear-gradient(rgba(80,140,40,0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(80,140,40,0.08) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+.share-sheet {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  background: #fff;
+  border-top: 1px solid #e8f0e0;
+  border-radius: 0 0 40px 40px;
+  padding: 16px 14px 22px;
+  z-index: 10;
+}
+
+.share-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.s-avatar {
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  background: #5c9e3a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(92,158,58,0.3);
+}
+
+.s-name {
+  font-size: 14px;
+  font-weight: 900;
+  color: #1e2e14;
+}
+
+.s-sub {
+  font-size: 11px;
+  font-weight: 700;
+  color: #8aaa70;
+  margin-top: 1px;
+}
+
+.s-stats {
+  display: flex;
+  gap: 7px;
+}
+
+.s-stat {
+  flex: 1;
+  background: #f7faf3;
+  border: 1.5px solid #e0ecd0;
+  border-radius: 13px;
+  padding: 8px 4px;
+  text-align: center;
+}
+
+.s-num {
+  font-size: 16px;
+  font-weight: 900;
+  color: #1e2e14;
+}
+
+.s-lbl {
+  font-size: 9px;
+  font-weight: 800;
+  color: #8aaa70;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+
+.url-bar {
+  position: absolute;
+  top: 44px; left: 12px; right: 12px;
+  background: rgba(255,255,255,0.9);
+  border: 1.5px solid #dce8d0;
+  border-radius: 20px;
+  padding: 6px 12px;
+  font-size: 10px;
+  font-weight: 800;
+  color: #5c9e3a;
+  text-align: center;
+  z-index: 11;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+</style>
+</head>
+<body>
+
+<div class="row">
+
+  <!-- 로그인 -->
+  <div class="col">
+    <div class="phone">
+      <div class="login">
+        <div class="login-mark">🏃</div>
+        <div class="login-name">나온김에 런</div>
+        <div class="login-desc">걷고 달리며 땅따먹기</div>
+        <div class="btn-google">
+          <div class="g-dot"></div>
+          Google로 시작하기
+        </div>
+      </div>
+    </div>
+    <div class="label">로그인</div>
+  </div>
+
+  <!-- 지도 (대기) -->
+  <div class="col">
+    <div class="phone">
+      <div class="map-bg">
+        <div class="road-h" style="top:178px"></div>
+        <div class="road-v" style="left:106px"></div>
+        <svg width="235" height="490" viewBox="0 0 235 490" style="position:absolute;inset:0;z-index:4">
+          <defs><filter id="gs"><feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="rgba(60,120,30,.2)"/></filter></defs>
+          <polygon points="60,200 88,164 132,158 172,180 180,233 158,268 110,277 66,252"
+            fill="rgba(92,158,58,0.22)" stroke="#5c9e3a" stroke-width="2" stroke-linejoin="round" filter="url(#gs)"/>
+          <polygon points="112,245 135,232 158,238 163,260 143,272 114,265"
+            fill="rgba(92,158,58,0.15)" stroke="#5c9e3a" stroke-width="1.5" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="bar">
+        <div class="bar-title">나온김에 런</div>
+        <div class="bar-icon">📋</div>
+      </div>
+      <div class="dot-wrap" style="top:43%;left:46%">
+        <div class="dot-pulse"></div>
+        <div class="dot-core"></div>
+      </div>
+      <div class="loc-fab">◎</div>
+      <div class="panel">
+        <div class="btn-start">달리기 시작</div>
+      </div>
+    </div>
+    <div class="label">지도</div>
+  </div>
+
+  <!-- 트래킹 중 -->
+  <div class="col">
+    <div class="phone">
+      <div class="map-bg">
+        <div class="road-h" style="top:178px"></div>
+        <div class="road-v" style="left:106px"></div>
+        <svg width="235" height="490" viewBox="0 0 235 490" style="position:absolute;inset:0;z-index:4">
+          <defs>
+            <filter id="gs2"><feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="rgba(60,120,30,.2)"/></filter>
+            <filter id="pf"><feDropShadow dx="0" dy="1" stdDeviation="2" flood-color="rgba(255,130,0,.3)"/></filter>
+          </defs>
+          <polygon points="60,200 88,164 132,158 172,180 180,233 158,268 110,277 66,252"
+            fill="rgba(92,158,58,0.22)" stroke="#5c9e3a" stroke-width="2" stroke-linejoin="round" filter="url(#gs2)"/>
+          <polyline points="118,262 130,244 142,227 150,210 155,193 148,178"
+            fill="none" stroke="#e87820" stroke-width="3"
+            stroke-linecap="round" stroke-linejoin="round"
+            stroke-dasharray="5,4" filter="url(#pf)"/>
+          <circle cx="148" cy="178" r="9" fill="rgba(92,158,58,0.2)"/>
+          <circle cx="148" cy="178" r="5.5" fill="#5c9e3a" stroke="white" stroke-width="2"/>
+        </svg>
+      </div>
+      <div class="bar">
+        <div class="bar-title rec">● 기록 중</div>
+      </div>
+      <div class="loc-fab">◎</div>
+      <div class="panel">
+        <div class="chips">
+          <div class="chip"><div class="chip-n">2.34</div><div class="chip-l">km</div></div>
+          <div class="chip"><div class="chip-n">18:42</div><div class="chip-l">time</div></div>
+          <div class="chip"><div class="chip-n">3,241</div><div class="chip-l">m²</div></div>
+        </div>
+        <div class="btn-stop">완료</div>
+      </div>
+    </div>
+    <div class="label">트래킹</div>
+  </div>
+
+  <!-- 기록 -->
+  <div class="col">
+    <div class="phone">
+      <div class="history">
+        <div class="bar" style="position:relative;height:auto;background:none;border:none;padding:12px 14px 0">
+          <div class="bar-title" style="font-size:11px;color:#8aaa70;font-weight:800;letter-spacing:1.5px;text-transform:uppercase">기록</div>
+        </div>
+        <div class="hist-top">
+          <div class="hist-title">28.4 km</div>
+          <div class="hist-sub">총 12회 · 24,394 m² 점령</div>
+        </div>
+        <div class="hist-list">
+          <div class="card">
+            <div class="card-bar"></div>
+            <div class="card-body">
+              <div class="card-date">6월 8일</div>
+              <div class="card-km">5.2 <span>km</span></div>
+              <div class="card-m2">4,812 m²</div>
+            </div>
+            <div class="card-share">↗</div>
+          </div>
+          <div class="card">
+            <div class="card-bar"></div>
+            <div class="card-body">
+              <div class="card-date">6월 6일</div>
+              <div class="card-km">3.8 <span>km</span></div>
+              <div class="card-m2">2,340 m²</div>
+            </div>
+            <div class="card-share">↗</div>
+          </div>
+          <div class="card">
+            <div class="card-bar"></div>
+            <div class="card-body">
+              <div class="card-date">6월 4일</div>
+              <div class="card-km">7.1 <span>km</span></div>
+              <div class="card-m2">8,091 m²</div>
+            </div>
+            <div class="card-share">↗</div>
+          </div>
+          <div class="card" style="opacity:.45">
+            <div class="card-bar"></div>
+            <div class="card-body">
+              <div class="card-date">6월 1일</div>
+              <div class="card-km">4.0 <span>km</span></div>
+              <div class="card-m2">3,150 m²</div>
+            </div>
+            <div class="card-share">↗</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="label">기록</div>
+  </div>
+
+  <!-- 공유 웹 -->
+  <div class="col">
+    <div class="phone">
+      <div class="share-map">
+        <div class="road-h" style="top:145px"></div>
+        <div class="road-v" style="left:118px"></div>
+        <svg width="235" height="490" viewBox="0 0 235 490" style="position:absolute;inset:0;z-index:4">
+          <defs><filter id="gs3"><feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="rgba(60,120,30,.18)"/></filter></defs>
+          <polygon points="46,118 76,84 134,78 188,104 202,158 184,204 132,222 74,210 50,174"
+            fill="rgba(92,158,58,0.22)" stroke="#5c9e3a" stroke-width="2" stroke-linejoin="round" filter="url(#gs3)"/>
+          <polygon points="80,172 104,158 148,164 162,188 154,214 116,224 84,212"
+            fill="rgba(92,158,58,0.15)" stroke="#5c9e3a" stroke-width="1.5" stroke-linejoin="round"/>
+          <polygon points="148,110 174,100 192,116 188,144 158,154 142,138"
+            fill="rgba(80,150,220,0.15)" stroke="#5090d0" stroke-width="1.5" stroke-linejoin="round"/>
+        </svg>
+        <div class="url-bar">village-run-app.web.app/share/heewon</div>
+      </div>
+      <div class="share-sheet">
+        <div class="share-row">
+          <div class="s-avatar">🏃</div>
+          <div>
+            <div class="s-name">heewon</div>
+            <div class="s-sub">24,394 m² 점령</div>
+          </div>
+        </div>
+        <div class="s-stats">
+          <div class="s-stat"><div class="s-num">12</div><div class="s-lbl">runs</div></div>
+          <div class="s-stat"><div class="s-num">28.4</div><div class="s-lbl">km</div></div>
+          <div class="s-stat"><div class="s-num">24k</div><div class="s-lbl">m²</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="label">공유</div>
+  </div>
+
+</div>
+</body>
+</html>

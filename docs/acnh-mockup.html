@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>나온김에 런 — Animal Crossing UI</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #f0f7e6;
+    font-family: 'Nunito', sans-serif;
+    min-height: 100vh;
+    background-image:
+      radial-gradient(circle at 20% 20%, rgba(167,220,120,0.3) 0%, transparent 50%),
+      radial-gradient(circle at 80% 80%, rgba(255,218,120,0.2) 0%, transparent 50%);
+  }
+
+  /* repeating grass texture via SVG pattern */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 5 Q22 2 24 5 Q22 8 20 5Z' fill='rgba(140,200,80,0.08)'/%3E%3Cpath d='M10 15 Q12 12 14 15 Q12 18 10 15Z' fill='rgba(140,200,80,0.06)'/%3E%3Cpath d='M30 25 Q32 22 34 25 Q32 28 30 25Z' fill='rgba(140,200,80,0.07)'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  h1.page-title {
+    text-align: center;
+    padding: 36px 0 8px;
+    font-size: 22px;
+    font-weight: 900;
+    color: #5a8a3a;
+    letter-spacing: -0.5px;
+    position: relative; z-index: 1;
+  }
+
+  .page-sub {
+    text-align: center;
+    font-size: 13px;
+    color: #8ab86a;
+    margin-bottom: 28px;
+    position: relative; z-index: 1;
+  }
+
+  .screens {
+    display: flex;
+    gap: 32px;
+    padding: 0 40px 60px;
+    justify-content: center;
+    flex-wrap: wrap;
+    position: relative; z-index: 1;
+  }
+
+  .screen-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .screen-label {
+    font-size: 12px;
+    font-weight: 800;
+    color: #7ab050;
+    letter-spacing: 0.5px;
+    background: rgba(255,255,255,0.7);
+    padding: 4px 14px;
+    border-radius: 20px;
+    border: 1.5px solid rgba(140,200,80,0.3);
+  }
+
+  /* ── Phone frame ── */
+  .phone {
+    width: 240px;
+    height: 500px;
+    border-radius: 40px;
+    border: 3px solid #c8e8a0;
+    background: #fafff4;
+    position: relative;
+    overflow: hidden;
+    box-shadow:
+      0 8px 0 #b8d88a,
+      0 12px 30px rgba(100,160,60,0.2),
+      0 2px 0 #d8f0b0 inset;
+  }
+
+  /* notch */
+  .phone::before {
+    content: '';
+    position: absolute;
+    top: 14px; left: 50%;
+    transform: translateX(-50%);
+    width: 56px; height: 8px;
+    background: #c8e8a0;
+    border-radius: 4px;
+    z-index: 30;
+  }
+
+  /* ═══ SCREEN 1: LOGIN ═══ */
+  .login-screen {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    background: linear-gradient(180deg, #e8f8d0 0%, #f5fce8 60%, #fff9e8 100%);
+    padding: 30px 24px;
+  }
+
+  .login-sky {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 160px;
+    background: linear-gradient(180deg, #c8eeff 0%, #e8f8d0 100%);
+  }
+
+  .cloud {
+    position: absolute;
+    background: rgba(255,255,255,0.9);
+    border-radius: 50px;
+  }
+
+  .cloud::before, .cloud::after {
+    content: '';
+    position: absolute;
+    background: inherit;
+    border-radius: 50%;
+  }
+
+  .c1 { width: 50px; height: 18px; top: 30px; left: 20px; }
+  .c1::before { width: 24px; height: 24px; top: -12px; left: 8px; }
+  .c1::after { width: 18px; height: 18px; top: -8px; left: 22px; }
+
+  .c2 { width: 40px; height: 14px; top: 50px; right: 24px; }
+  .c2::before { width: 20px; height: 20px; top: -10px; left: 6px; }
+  .c2::after { width: 14px; height: 14px; top: -6px; left: 18px; }
+
+  .login-island {
+    position: absolute;
+    bottom: 120px;
+    width: 180px; height: 60px;
+    background: linear-gradient(180deg, #7ac44a 0%, #5aaa2a 100%);
+    border-radius: 50%;
+    box-shadow: 0 6px 0 rgba(80,140,40,0.5);
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 6px;
+    font-size: 28px;
+  }
+
+  .login-title-wrap {
+    position: relative; z-index: 5;
+    text-align: center;
+    margin-bottom: 24px;
+  }
+
+  .login-title {
+    font-size: 24px;
+    font-weight: 900;
+    color: #4a7a2a;
+    letter-spacing: -0.5px;
+    text-shadow: 0 2px 0 rgba(255,255,255,0.8);
+    line-height: 1.1;
+  }
+
+  .login-leaf {
+    font-size: 18px;
+    display: inline-block;
+    animation: wobble 2s ease-in-out infinite;
+  }
+
+  @keyframes wobble {
+    0%,100% { transform: rotate(-8deg); }
+    50% { transform: rotate(8deg); }
+  }
+
+  .login-sub {
+    font-size: 11px;
+    font-weight: 700;
+    color: #8aba5a;
+    letter-spacing: 1px;
+    margin-top: 4px;
+  }
+
+  .google-btn {
+    position: relative; z-index: 5;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 13px 24px;
+    border-radius: 50px;
+    background: linear-gradient(180deg, #ffffff 0%, #f5f5f5 100%);
+    border: 2.5px solid #d0d0d0;
+    color: #444;
+    font-size: 13px;
+    font-weight: 800;
+    font-family: 'Nunito', sans-serif;
+    box-shadow: 0 4px 0 #c0c0c0, 0 6px 16px rgba(0,0,0,0.1);
+    cursor: pointer;
+    transition: transform 0.1s;
+  }
+
+  .google-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #c0c0c0; }
+
+  .google-icon {
+    width: 18px; height: 18px;
+    background: conic-gradient(from 0deg, #ea4335 90deg, #fbbc05 90deg 180deg, #34a853 180deg 270deg, #4285f4 270deg);
+    border-radius: 50%;
+  }
+
+  .grass-bottom {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 70px;
+    background: linear-gradient(180deg, #8acc50 0%, #6aac38 100%);
+    border-radius: 0 0 38px 38px;
+  }
+
+  .grass-bottom::before {
+    content: '🌿🌱🌿🌱🌿🌱🌿🌱';
+    position: absolute;
+    top: -14px;
+    left: 0; right: 0;
+    text-align: center;
+    font-size: 14px;
+    letter-spacing: -2px;
+  }
+
+  /* ═══ SCREENS 2/3: MAP ═══ */
+  .map-screen {
+    position: absolute;
+    inset: 0;
+    background: #d4eeba;
+  }
+
+  /* tile-ish map background */
+  .map-tiles {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(140,200,80,0.15) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(140,200,80,0.15) 1px, transparent 1px),
+      radial-gradient(circle at 40% 45%, rgba(100,180,60,0.3) 0%, transparent 40%),
+      radial-gradient(circle at 70% 55%, rgba(140,200,100,0.2) 0%, transparent 30%);
+    background-size: 20px 20px, 20px 20px, 100% 100%, 100% 100%;
+  }
+
+  /* road */
+  .road {
+    position: absolute;
+    background: rgba(220,200,160,0.6);
+    border-radius: 3px;
+  }
+
+  .topbar-ac {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 62px;
+    background: linear-gradient(180deg, rgba(255,252,235,0.97) 0%, rgba(255,252,235,0) 100%);
+    display: flex;
+    align-items: flex-end;
+    padding: 0 14px 10px;
+    gap: 8px;
+    z-index: 10;
+  }
+
+  .topbar-title-ac {
+    font-size: 16px;
+    font-weight: 900;
+    color: #4a7a2a;
+    flex: 1;
+    text-shadow: 0 1px 0 rgba(255,255,255,0.8);
+  }
+
+  .icon-btn-ac {
+    width: 34px; height: 34px;
+    border-radius: 12px;
+    background: linear-gradient(180deg, #ffffff 0%, #f0f0e8 100%);
+    border: 2px solid #c8d8a0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    box-shadow: 0 3px 0 #b8c890, 0 4px 8px rgba(0,0,0,0.08);
+  }
+
+  /* territory */
+  .territory-ac {
+    position: absolute;
+    inset: 0;
+    z-index: 4;
+  }
+
+  /* player dot */
+  .player-dot {
+    position: absolute;
+    z-index: 8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .player-dot-ring {
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    background: rgba(80,180,80,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: playerPulse 1.5s ease-in-out infinite;
+  }
+
+  @keyframes playerPulse {
+    0%,100% { transform: scale(1); }
+    50% { transform: scale(1.3); }
+  }
+
+  .player-dot-inner {
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: #50c050;
+    border: 2.5px solid #fff;
+    box-shadow: 0 2px 8px rgba(80,180,80,0.6);
+    font-size: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .bottom-area-ac {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    padding: 16px 16px 24px;
+    background: linear-gradient(0deg, rgba(255,252,235,0.98) 30%, rgba(255,252,235,0) 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    z-index: 10;
+  }
+
+  .run-btn-ac {
+    padding: 13px 40px;
+    border-radius: 50px;
+    font-size: 15px;
+    font-weight: 900;
+    font-family: 'Nunito', sans-serif;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    letter-spacing: 0.3px;
+    transition: transform 0.1s;
+  }
+
+  .run-btn-ac.start {
+    background: linear-gradient(180deg, #7add4a 0%, #50ba28 100%);
+    color: #fff;
+    border: 2.5px solid #3a9a1a;
+    box-shadow: 0 5px 0 #2a7a10, 0 8px 20px rgba(80,180,40,0.3);
+    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+  }
+
+  .run-btn-ac.stop {
+    background: linear-gradient(180deg, #ff8060 0%, #e85030 100%);
+    color: #fff;
+    border: 2.5px solid #c03018;
+    box-shadow: 0 5px 0 #a02010, 0 8px 20px rgba(220,80,40,0.3);
+    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+  }
+
+  .loc-btn-ac {
+    position: absolute;
+    right: 14px; bottom: 88px;
+    width: 44px; height: 44px;
+    border-radius: 16px;
+    background: linear-gradient(180deg, #ffffff 0%, #f5f5ec 100%);
+    border: 2px solid #c8d8a0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    box-shadow: 0 4px 0 #b0c080, 0 6px 12px rgba(0,0,0,0.1);
+    z-index: 10;
+  }
+
+  .tracking-bar {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .stat-chip {
+    flex: 1;
+    background: linear-gradient(180deg, #ffffff 0%, #f8fce8 100%);
+    border: 2px solid #c8e090;
+    border-radius: 14px;
+    padding: 8px 6px;
+    text-align: center;
+    box-shadow: 0 3px 0 #b0d070, 0 4px 10px rgba(0,0,0,0.06);
+  }
+
+  .stat-num {
+    font-size: 16px;
+    font-weight: 900;
+    color: #3a6a1a;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .stat-lbl {
+    font-size: 8px;
+    font-weight: 800;
+    color: #8ab850;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-top: 1px;
+  }
+
+  /* ═══ SCREEN 4: HISTORY ═══ */
+  .history-screen {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, #e8f8d0 0%, #f5fce8 100%);
+    display: flex;
+    flex-direction: column;
+    padding-top: 50px;
+  }
+
+  .history-hdr {
+    padding: 12px 16px 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .history-hdr-title {
+    font-size: 20px;
+    font-weight: 900;
+    color: #3a6a1a;
+    flex: 1;
+    text-shadow: 0 1px 0 rgba(255,255,255,0.7);
+  }
+
+  .history-badge {
+    background: linear-gradient(180deg, #7add4a, #50ba28);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 900;
+    padding: 3px 10px;
+    border-radius: 20px;
+    border: 2px solid #3a9a1a;
+    box-shadow: 0 2px 0 #2a7a10;
+  }
+
+  .history-list {
+    flex: 1;
+    padding: 8px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    overflow: hidden;
+  }
+
+  .run-card-ac {
+    background: linear-gradient(180deg, #ffffff 0%, #f8ffe8 100%);
+    border: 2px solid #c8e090;
+    border-radius: 18px;
+    padding: 11px 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 4px 0 #b0d070, 0 6px 12px rgba(0,0,0,0.06);
+    position: relative;
+  }
+
+  .run-card-icon {
+    width: 38px; height: 38px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #90e060, #60c030);
+    border: 2px solid #50aa20;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    box-shadow: 0 3px 0 #3a8a10;
+    flex-shrink: 0;
+  }
+
+  .run-card-info { flex: 1; }
+
+  .run-card-date-ac {
+    font-size: 10px;
+    font-weight: 700;
+    color: #8ab860;
+    margin-bottom: 2px;
+  }
+
+  .run-card-dist-ac {
+    font-size: 17px;
+    font-weight: 900;
+    color: #3a6a1a;
+  }
+
+  .run-card-dist-ac span {
+    font-size: 11px;
+    font-weight: 700;
+    color: #7aaa50;
+    margin-left: 1px;
+  }
+
+  .run-card-area-ac {
+    font-size: 10px;
+    font-weight: 700;
+    color: #9aba70;
+    margin-top: 1px;
+  }
+
+  .share-btn-ac {
+    width: 30px; height: 30px;
+    border-radius: 10px;
+    background: linear-gradient(180deg, #ffe878, #ffd040);
+    border: 2px solid #e0a820;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    box-shadow: 0 3px 0 #c09010;
+  }
+
+  /* ═══ SCREEN 5: SHARE WEB ═══ */
+  .share-screen {
+    position: absolute;
+    inset: 0;
+    background: #d4eeba;
+  }
+
+  .share-panel-ac {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    background: linear-gradient(180deg, rgba(255,252,235,0.0) 0%, rgba(255,252,235,0.98) 20%);
+    padding: 20px 14px 24px;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .share-profile {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .avatar-ac {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #90e060, #50c020);
+    border: 3px solid #fff;
+    box-shadow: 0 3px 0 #60a030, 0 4px 10px rgba(0,0,0,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+  }
+
+  .share-name {
+    font-size: 15px;
+    font-weight: 900;
+    color: #3a6a1a;
+  }
+
+  .share-total-ac {
+    font-size: 11px;
+    font-weight: 700;
+    color: #8ab860;
+    margin-top: 1px;
+  }
+
+  .share-stats-row {
+    display: flex;
+    gap: 6px;
+  }
+
+  .share-stat-ac {
+    flex: 1;
+    background: linear-gradient(180deg, #fff 0%, #f8ffe8 100%);
+    border: 2px solid #c8e090;
+    border-radius: 14px;
+    padding: 8px 6px;
+    text-align: center;
+    box-shadow: 0 3px 0 #b0d070;
+  }
+
+  .share-stat-num-ac {
+    font-size: 16px;
+    font-weight: 900;
+    color: #3a6a1a;
+  }
+
+  .share-stat-lbl-ac {
+    font-size: 8px;
+    font-weight: 800;
+    color: #8ab850;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-top: 1px;
+  }
+
+  .url-bar {
+    position: absolute;
+    top: 18px; left: 12px; right: 12px;
+    background: rgba(255,255,255,0.85);
+    border: 2px solid #c8e090;
+    border-radius: 20px;
+    padding: 5px 12px;
+    font-size: 10px;
+    font-weight: 700;
+    color: #6a9a40;
+    z-index: 11;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+  }
+</style>
+</head>
+<body>
+
+<h1 class="page-title">🍃 나온김에 런</h1>
+<p class="page-sub">Animal Crossing Style UI Concept</p>
+
+<div class="screens">
+
+  <!-- ① 로그인 -->
+  <div class="screen-wrap">
+    <div class="phone">
+      <div class="login-screen">
+        <div class="login-sky">
+          <div class="cloud c1"></div>
+          <div class="cloud c2"></div>
+        </div>
+
+        <div style="position:absolute;top:88px;width:100%;display:flex;justify-content:center;z-index:5">
+          <div style="font-size:40px;animation:wobble 2s ease-in-out infinite;display:inline-block">🏃</div>
+        </div>
+
+        <div class="login-island">🌳🌸🌳</div>
+
+        <div class="login-title-wrap" style="margin-top:60px">
+          <div class="login-title">
+            <span class="login-leaf">🍃</span> 나온김에 런
+          </div>
+          <div class="login-sub">걷고 달리며 땅따먹기!</div>
+        </div>
+
+        <div class="google-btn">
+          <div class="google-icon"></div>
+          Google로 시작하기
+        </div>
+
+        <div class="grass-bottom"></div>
+      </div>
+    </div>
+    <div class="screen-label">로그인</div>
+  </div>
+
+  <!-- ② 지도 (대기) -->
+  <div class="screen-wrap">
+    <div class="phone">
+      <div class="map-screen">
+        <div class="map-tiles"></div>
+
+        <!-- roads -->
+        <div class="road" style="top:180px;left:0;right:0;height:14px;opacity:0.7"></div>
+        <div class="road" style="top:0;bottom:0;left:110px;width:14px;opacity:0.7"></div>
+
+        <!-- territory SVG -->
+        <svg class="territory-ac" width="240" height="500" viewBox="0 0 240 500">
+          <defs>
+            <filter id="softshadow">
+              <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="rgba(80,160,40,0.3)"/>
+            </filter>
+          </defs>
+          <polygon points="60,210 88,170 135,165 175,188 185,240 162,278 112,288 70,262"
+            fill="rgba(120,200,80,0.3)" stroke="#7acc50" stroke-width="2.5"
+            stroke-linejoin="round" filter="url(#softshadow)"/>
+          <polygon points="118,255 140,242 165,248 170,272 148,284 118,278"
+            fill="rgba(160,220,80,0.25)" stroke="#90cc50" stroke-width="2"
+            stroke-linejoin="round"/>
+          <!-- little house icons -->
+          <text x="100" y="230" font-size="16" text-anchor="middle" opacity="0.6">🏡</text>
+          <text x="148" y="268" font-size="11" text-anchor="middle" opacity="0.5">🌳</text>
+          <text x="160" y="210" font-size="11" text-anchor="middle" opacity="0.4">🌸</text>
+        </svg>
+
+        <!-- trees scattered -->
+        <div style="position:absolute;font-size:18px;top:130px;left:30px;opacity:0.7">🌲</div>
+        <div style="position:absolute;font-size:14px;top:300px;right:28px;opacity:0.6">🌿</div>
+        <div style="position:absolute;font-size:16px;top:90px;right:40px;opacity:0.5">🌸</div>
+        <div style="position:absolute;font-size:12px;top:340px;left:22px;opacity:0.5">🍄</div>
+      </div>
+
+      <div class="topbar-ac">
+        <div class="topbar-title-ac">🗺️ 나의 섬</div>
+        <div class="icon-btn-ac">📋</div>
+      </div>
+
+      <div class="player-dot" style="top:43%;left:47%">
+        <div class="player-dot-ring">
+          <div class="player-dot-inner">🏃</div>
+        </div>
+      </div>
+
+      <div class="loc-btn-ac">📍</div>
+
+      <div class="bottom-area-ac">
+        <div class="run-btn-ac start">▶ &nbsp;달리기 시작!</div>
+      </div>
+    </div>
+    <div class="screen-label">지도 (대기)</div>
+  </div>
+
+  <!-- ③ 트래킹 중 -->
+  <div class="screen-wrap">
+    <div class="phone">
+      <div class="map-screen">
+        <div class="map-tiles"></div>
+        <div class="road" style="top:180px;left:0;right:0;height:14px;opacity:0.7"></div>
+        <div class="road" style="top:0;bottom:0;left:110px;width:14px;opacity:0.7"></div>
+
+        <svg class="territory-ac" width="240" height="500" viewBox="0 0 240 500">
+          <defs>
+            <filter id="sf2">
+              <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="rgba(80,160,40,0.3)"/>
+            </filter>
+          </defs>
+          <polygon points="60,210 88,170 135,165 175,188 185,240 162,278 112,288 70,262"
+            fill="rgba(120,200,80,0.3)" stroke="#7acc50" stroke-width="2.5"
+            stroke-linejoin="round" filter="url(#sf2)"/>
+          <!-- live path -->
+          <polyline points="120,272 134,252 146,236 155,218 160,200 152,185"
+            fill="none" stroke="#ff9020" stroke-width="3" stroke-linecap="round"
+            stroke-linejoin="round" stroke-dasharray="6,4"/>
+          <!-- footprints along path -->
+          <text x="136" y="252" font-size="9" opacity="0.7">👣</text>
+          <text x="153" y="222" font-size="9" opacity="0.7">👣</text>
+          <!-- current pos -->
+          <circle cx="152" cy="185" r="12" fill="rgba(80,200,80,0.2)"/>
+          <circle cx="152" cy="185" r="8" fill="#50c050" stroke="white" stroke-width="2.5"/>
+          <text x="152" y="189" font-size="8" text-anchor="middle">🏃</text>
+          <text x="100" y="230" font-size="14" text-anchor="middle" opacity="0.5">🏡</text>
+        </svg>
+
+        <div style="position:absolute;font-size:16px;top:130px;left:30px;opacity:0.6">🌲</div>
+        <div style="position:absolute;font-size:12px;top:300px;right:28px;opacity:0.5">🌿</div>
+      </div>
+
+      <div class="topbar-ac">
+        <div class="topbar-title-ac" id="rec-title">🌟 달리는 중!</div>
+      </div>
+
+      <div class="bottom-area-ac">
+        <div class="tracking-bar">
+          <div class="stat-chip">
+            <div class="stat-num">2.34</div>
+            <div class="stat-lbl">km</div>
+          </div>
+          <div class="stat-chip">
+            <div class="stat-num">18:42</div>
+            <div class="stat-lbl">time</div>
+          </div>
+          <div class="stat-chip">
+            <div class="stat-num">3,241</div>
+            <div class="stat-lbl">m²</div>
+          </div>
+        </div>
+        <div class="run-btn-ac stop">■ &nbsp;완료!</div>
+      </div>
+    </div>
+    <div class="screen-label">트래킹 중</div>
+  </div>
+
+  <!-- ④ 기록 -->
+  <div class="screen-wrap">
+    <div class="phone">
+      <div class="history-screen">
+        <div class="topbar-ac" style="position:relative;height:auto;background:none;padding:8px 14px 0">
+          <div class="topbar-title-ac"></div>
+        </div>
+        <div class="history-hdr">
+          <div class="history-hdr-title">📚 기록 모아보기</div>
+          <div class="history-badge">12 runs</div>
+        </div>
+
+        <div style="padding:0 12px 8px;font-size:10px;font-weight:800;color:#8ab860">총 28.4km · 24,394m² 점령 🎉</div>
+
+        <div class="history-list">
+          <div class="run-card-ac">
+            <div class="run-card-icon">🌟</div>
+            <div class="run-card-info">
+              <div class="run-card-date-ac">2026년 6월 8일</div>
+              <div class="run-card-dist-ac">5.2<span>km</span></div>
+              <div class="run-card-area-ac">🗺️ 4,812 m² 점령</div>
+            </div>
+            <div class="share-btn-ac">↗</div>
+          </div>
+
+          <div class="run-card-ac">
+            <div class="run-card-icon">🏃</div>
+            <div class="run-card-info">
+              <div class="run-card-date-ac">2026년 6월 6일</div>
+              <div class="run-card-dist-ac">3.8<span>km</span></div>
+              <div class="run-card-area-ac">🗺️ 2,340 m² 점령</div>
+            </div>
+            <div class="share-btn-ac">↗</div>
+          </div>
+
+          <div class="run-card-ac">
+            <div class="run-card-icon">🌈</div>
+            <div class="run-card-info">
+              <div class="run-card-date-ac">2026년 6월 4일</div>
+              <div class="run-card-dist-ac">7.1<span>km</span></div>
+              <div class="run-card-area-ac">🗺️ 8,091 m² 점령</div>
+            </div>
+            <div class="share-btn-ac">↗</div>
+          </div>
+
+          <div class="run-card-ac" style="opacity:0.55">
+            <div class="run-card-icon">🍃</div>
+            <div class="run-card-info">
+              <div class="run-card-date-ac">2026년 6월 1일</div>
+              <div class="run-card-dist-ac">4.0<span>km</span></div>
+              <div class="run-card-area-ac">🗺️ 3,150 m² 점령</div>
+            </div>
+            <div class="share-btn-ac">↗</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="screen-label">기록</div>
+  </div>
+
+  <!-- ⑤ 공유 웹 -->
+  <div class="screen-wrap">
+    <div class="phone">
+      <div class="share-screen">
+        <div class="map-tiles"></div>
+        <svg width="240" height="500" viewBox="0 0 240 500" style="position:absolute;inset:0;z-index:3">
+          <defs>
+            <filter id="sf3">
+              <feDropShadow dx="0" dy="3" stdDeviation="5" flood-color="rgba(80,160,40,0.25)"/>
+            </filter>
+          </defs>
+          <polygon points="50,130 80,95 138,88 190,112 205,168 188,216 138,236 78,222 55,185"
+            fill="rgba(120,200,80,0.28)" stroke="#7acc50" stroke-width="2.5"
+            stroke-linejoin="round" filter="url(#sf3)"/>
+          <polygon points="85,182 108,168 152,172 168,196 160,222 122,232 88,220"
+            fill="rgba(160,220,100,0.22)" stroke="#90cc50" stroke-width="1.8"
+            stroke-linejoin="round"/>
+          <polygon points="150,122 178,110 198,126 194,155 164,166 145,150"
+            fill="rgba(100,180,240,0.18)" stroke="#70b8e0" stroke-width="1.5"
+            stroke-linejoin="round"/>
+          <text x="120" y="160" font-size="15" text-anchor="middle" opacity="0.5">🏡</text>
+          <text x="170" y="140" font-size="11" text-anchor="middle" opacity="0.4">🌊</text>
+          <text x="60" y="200" font-size="11" opacity="0.4">🌲</text>
+          <text x="190" y="200" font-size="12" opacity="0.4">🌸</text>
+        </svg>
+
+        <div class="url-bar">🌐 village-run-app.web.app/share/heewon</div>
+      </div>
+
+      <div class="share-panel-ac">
+        <div class="share-profile">
+          <div class="avatar-ac">🏃</div>
+          <div>
+            <div class="share-name">heewon의 섬 🌿</div>
+            <div class="share-total-ac">총 24,394 m² 점령 완료!</div>
+          </div>
+        </div>
+        <div class="share-stats-row">
+          <div class="share-stat-ac">
+            <div class="share-stat-num-ac">12</div>
+            <div class="share-stat-lbl-ac">runs</div>
+          </div>
+          <div class="share-stat-ac">
+            <div class="share-stat-num-ac">28.4</div>
+            <div class="share-stat-lbl-ac">km</div>
+          </div>
+          <div class="share-stat-ac">
+            <div class="share-stat-num-ac">24k</div>
+            <div class="share-stat-lbl-ac">m²</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="screen-label">공유 웹</div>
+  </div>
+
+</div>
+
+<script>
+// gentle floating animation for emojis
+document.querySelectorAll('.login-island').forEach(el => {
+  el.style.animation = 'float 3s ease-in-out infinite';
+});
+
+const style = document.createElement('style');
+style.textContent = `
+  @keyframes float {
+    0%,100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+  }
+`;
+document.head.appendChild(style);
+</script>
+</body>
+</html>

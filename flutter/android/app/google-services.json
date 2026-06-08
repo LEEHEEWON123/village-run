@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "546699141670",
+    "project_id": "village-run-d90a9",
+    "storage_bucket": "village-run-d90a9.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:546699141670:android:37384abb1b255d7223fce7",
+        "android_client_info": {
+          "package_name": "com.villagerun.village_run"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBNfantvvazNiLOnEnJ5mEGcQcDw-GhJ-Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>나온김에 런 — Three.js UI Mockup</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #040810;
+    color: #e0eeff;
+    font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+    overflow-x: hidden;
+  }
+
+  h1.page-title {
+    text-align: center;
+    padding: 40px 0 16px;
+    font-size: 13px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: #4a7aff;
+    opacity: 0.7;
+  }
+
+  .screens {
+    display: flex;
+    gap: 40px;
+    padding: 24px 48px 60px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .screen-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .screen-label {
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #4a7aff;
+    opacity: 0.6;
+  }
+
+  /* Phone frame */
+  .phone {
+    width: 260px;
+    height: 520px;
+    border-radius: 36px;
+    border: 1.5px solid rgba(74, 122, 255, 0.3);
+    background: #060d1a;
+    position: relative;
+    overflow: hidden;
+    box-shadow:
+      0 0 0 1px rgba(74,122,255,0.1),
+      0 0 40px rgba(74,122,255,0.08),
+      0 0 80px rgba(0,0,0,0.8),
+      inset 0 0 30px rgba(74,122,255,0.03);
+  }
+
+  /* Notch */
+  .phone::before {
+    content: '';
+    position: absolute;
+    top: 12px; left: 50%;
+    transform: translateX(-50%);
+    width: 60px; height: 6px;
+    background: rgba(74,122,255,0.2);
+    border-radius: 3px;
+    z-index: 20;
+  }
+
+  /* Particle canvas per phone */
+  .phone canvas {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  /* ── SCREEN 1: LOGIN ── */
+  .screen-login {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    position: relative;
+    z-index: 2;
+    gap: 0;
+  }
+
+  .login-glow {
+    position: absolute;
+    width: 200px; height: 200px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(74,122,255,0.15) 0%, transparent 70%);
+    top: 50%; left: 50%;
+    transform: translate(-50%, -60%);
+    animation: pulse 3s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 0.6; transform: translate(-50%,-60%) scale(1); }
+    50% { opacity: 1; transform: translate(-50%,-60%) scale(1.1); }
+  }
+
+  .login-icon {
+    width: 64px; height: 64px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, rgba(74,122,255,0.3), rgba(100,60,220,0.3));
+    border: 1px solid rgba(74,122,255,0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    position: relative;
+    z-index: 3;
+    box-shadow: 0 0 20px rgba(74,122,255,0.3), 0 0 40px rgba(74,122,255,0.1);
+    margin-bottom: 20px;
+  }
+
+  .login-title {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    color: #e8f0ff;
+    position: relative; z-index: 3;
+    text-shadow: 0 0 20px rgba(74,122,255,0.5);
+  }
+
+  .login-sub {
+    font-size: 11px;
+    color: rgba(74,122,255,0.5);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-top: 6px;
+    margin-bottom: 44px;
+    position: relative; z-index: 3;
+  }
+
+  .google-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 24px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.12);
+    color: #e0eeff;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.2px;
+    position: relative; z-index: 3;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 0 20px rgba(74,122,255,0.05);
+  }
+
+  .google-icon {
+    width: 18px; height: 18px;
+    background: conic-gradient(from 0deg, #ea4335 90deg, #fbbc05 90deg 180deg, #34a853 180deg 270deg, #4285f4 270deg);
+    border-radius: 50%;
+  }
+
+  /* ── SCREEN 2: MAP IDLE ── */
+  .map-bg {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+  }
+
+  .map-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(74,122,255,0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(74,122,255,0.06) 1px, transparent 1px);
+    background-size: 26px 26px;
+    z-index: 2;
+  }
+
+  .map-glow-center {
+    position: absolute;
+    width: 160px; height: 160px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(74,122,255,0.12) 0%, transparent 70%);
+    top: 44%; left: 50%;
+    transform: translate(-50%,-50%);
+    z-index: 3;
+    animation: mapPulse 2.5s ease-in-out infinite;
+  }
+
+  @keyframes mapPulse {
+    0%,100% { transform: translate(-50%,-50%) scale(1); opacity: 0.7; }
+    50% { transform: translate(-50%,-50%) scale(1.3); opacity: 1; }
+  }
+
+  /* territory polygon */
+  .territory {
+    position: absolute;
+    z-index: 4;
+  }
+
+  /* topbar */
+  .topbar {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 56px;
+    background: linear-gradient(180deg, rgba(6,13,26,0.95) 0%, rgba(6,13,26,0) 100%);
+    display: flex;
+    align-items: flex-end;
+    padding: 0 16px 10px;
+    z-index: 10;
+    gap: 8px;
+  }
+
+  .topbar-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #e8f0ff;
+    letter-spacing: -0.3px;
+    flex: 1;
+    text-shadow: 0 0 12px rgba(74,122,255,0.5);
+  }
+
+  .icon-btn {
+    width: 32px; height: 32px;
+    border-radius: 10px;
+    background: rgba(74,122,255,0.1);
+    border: 1px solid rgba(74,122,255,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    box-shadow: 0 0 8px rgba(74,122,255,0.1);
+  }
+
+  /* GPS dot */
+  .gps-dot {
+    position: absolute;
+    z-index: 8;
+    top: 44%; left: 50%;
+    transform: translate(-50%,-50%);
+  }
+
+  .gps-dot-outer {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: rgba(74,122,255,0.15);
+    display: flex; align-items: center; justify-content: center;
+    animation: gpsPulse 2s ease-in-out infinite;
+  }
+
+  @keyframes gpsPulse {
+    0%,100% { transform: scale(1); }
+    50% { transform: scale(1.4); }
+  }
+
+  .gps-dot-inner {
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    background: #4a7aff;
+    border: 2px solid #fff;
+    box-shadow: 0 0 10px rgba(74,122,255,0.8), 0 0 20px rgba(74,122,255,0.4);
+  }
+
+  /* bottom float */
+  .bottom-area {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    padding: 20px 16px 28px;
+    background: linear-gradient(0deg, rgba(6,13,26,0.98) 0%, rgba(6,13,26,0) 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    z-index: 10;
+  }
+
+  .run-btn {
+    padding: 13px 40px;
+    border-radius: 50px;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .run-btn.start {
+    background: linear-gradient(135deg, #2a5cff, #4a7aff);
+    color: #fff;
+    box-shadow: 0 0 20px rgba(74,122,255,0.5), 0 0 40px rgba(74,122,255,0.2), 0 4px 16px rgba(0,0,0,0.4);
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+
+  .run-btn.start::after {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent);
+    animation: shimmer 2s infinite;
+  }
+
+  .run-btn.stop {
+    background: linear-gradient(135deg, #cc2222, #ff4444);
+    color: #fff;
+    box-shadow: 0 0 20px rgba(255,60,60,0.5), 0 0 40px rgba(255,60,60,0.2), 0 4px 16px rgba(0,0,0,0.4);
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+
+  @keyframes shimmer {
+    0% { left: -100%; }
+    100% { left: 200%; }
+  }
+
+  .my-loc-btn {
+    position: absolute;
+    right: 14px;
+    bottom: 96px;
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: rgba(6,13,26,0.9);
+    border: 1px solid rgba(74,122,255,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    box-shadow: 0 0 12px rgba(74,122,255,0.2);
+    z-index: 10;
+    color: #4a7aff;
+  }
+
+  /* ── SCREEN 3: TRACKING ── */
+  .tracking-path {
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+  }
+
+  .tracking-stats {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .stat-card {
+    flex: 1;
+    background: rgba(74,122,255,0.08);
+    border: 1px solid rgba(74,122,255,0.2);
+    border-radius: 10px;
+    padding: 8px 10px;
+    text-align: center;
+  }
+
+  .stat-val {
+    font-size: 16px;
+    font-weight: 700;
+    color: #e8f0ff;
+    font-variant-numeric: tabular-nums;
+    text-shadow: 0 0 8px rgba(74,122,255,0.4);
+  }
+
+  .stat-unit {
+    font-size: 9px;
+    color: rgba(74,122,255,0.5);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-top: 1px;
+  }
+
+  /* ── SCREEN 4: HISTORY ── */
+  .screen-history {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    padding: 52px 0 0;
+    overflow: hidden;
+  }
+
+  .history-header {
+    padding: 0 16px 16px;
+    border-bottom: 1px solid rgba(74,122,255,0.1);
+  }
+
+  .history-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #e8f0ff;
+    letter-spacing: -0.3px;
+    text-shadow: 0 0 12px rgba(74,122,255,0.3);
+  }
+
+  .history-sub {
+    font-size: 11px;
+    color: rgba(74,122,255,0.4);
+    letter-spacing: 1px;
+    margin-top: 3px;
+  }
+
+  .history-list {
+    flex: 1;
+    overflow: hidden;
+    padding: 12px 12px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .run-card {
+    background: rgba(74,122,255,0.05);
+    border: 1px solid rgba(74,122,255,0.15);
+    border-radius: 12px;
+    padding: 12px 14px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .run-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 3px; height: 100%;
+    background: linear-gradient(180deg, #4a7aff, rgba(74,122,255,0));
+  }
+
+  .run-card-date {
+    font-size: 10px;
+    color: rgba(74,122,255,0.5);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .run-card-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+
+  .run-card-dist {
+    font-size: 20px;
+    font-weight: 700;
+    color: #e8f0ff;
+    text-shadow: 0 0 10px rgba(74,122,255,0.3);
+  }
+
+  .run-card-dist span {
+    font-size: 11px;
+    font-weight: 400;
+    color: rgba(74,122,255,0.5);
+    margin-left: 2px;
+  }
+
+  .run-card-area {
+    font-size: 12px;
+    color: rgba(74,122,255,0.6);
+  }
+
+  .run-card-share {
+    position: absolute;
+    top: 10px; right: 12px;
+    width: 24px; height: 24px;
+    border-radius: 6px;
+    background: rgba(74,122,255,0.1);
+    border: 1px solid rgba(74,122,255,0.2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px;
+    color: rgba(74,122,255,0.7);
+  }
+
+  /* scan line */
+  .scanline {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(74,122,255,0.4), transparent);
+    animation: scan 3s linear infinite;
+    z-index: 15;
+    pointer-events: none;
+  }
+
+  @keyframes scan {
+    0% { top: 0%; opacity: 1; }
+    90% { opacity: 0.5; }
+    100% { top: 100%; opacity: 0; }
+  }
+
+  /* corner deco */
+  .corner {
+    position: absolute;
+    width: 12px; height: 12px;
+    z-index: 15;
+    pointer-events: none;
+  }
+  .corner-tl { top: 20px; left: 14px; border-top: 1px solid rgba(74,122,255,0.4); border-left: 1px solid rgba(74,122,255,0.4); }
+  .corner-tr { top: 20px; right: 14px; border-top: 1px solid rgba(74,122,255,0.4); border-right: 1px solid rgba(74,122,255,0.4); }
+  .corner-bl { bottom: 14px; left: 14px; border-bottom: 1px solid rgba(74,122,255,0.4); border-left: 1px solid rgba(74,122,255,0.4); }
+  .corner-br { bottom: 14px; right: 14px; border-bottom: 1px solid rgba(74,122,255,0.4); border-right: 1px solid rgba(74,122,255,0.4); }
+
+  /* ── SCREEN 5: SHARE WEB ── */
+  .share-map {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    overflow: hidden;
+  }
+
+  .share-panel {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    background: linear-gradient(0deg, rgba(6,13,26,0.98) 0%, rgba(6,13,26,0.85) 100%);
+    border-top: 1px solid rgba(74,122,255,0.2);
+    padding: 16px;
+    z-index: 10;
+  }
+
+  .share-user {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+
+  .avatar {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #2a5cff, #6633cc);
+    border: 1px solid rgba(74,122,255,0.4);
+    box-shadow: 0 0 10px rgba(74,122,255,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+  }
+
+  .share-username {
+    font-size: 13px;
+    font-weight: 600;
+    color: #e8f0ff;
+    text-shadow: 0 0 8px rgba(74,122,255,0.3);
+  }
+
+  .share-total {
+    font-size: 10px;
+    color: rgba(74,122,255,0.5);
+    letter-spacing: 1px;
+  }
+
+  .share-stats {
+    display: flex;
+    gap: 6px;
+  }
+
+  .share-stat {
+    flex: 1;
+    background: rgba(74,122,255,0.07);
+    border: 1px solid rgba(74,122,255,0.15);
+    border-radius: 8px;
+    padding: 8px;
+    text-align: center;
+  }
+
+  .share-stat-num {
+    font-size: 15px;
+    font-weight: 700;
+    color: #e8f0ff;
+    text-shadow: 0 0 8px rgba(74,122,255,0.4);
+  }
+
+  .share-stat-label {
+    font-size: 8px;
+    color: rgba(74,122,255,0.4);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+
+</style>
+</head>
+<body>
+
+<h1 class="page-title">나온김에 런 — Three.js UI Concept</h1>
+
+<div class="screens">
+
+  <!-- ① 로그인 -->
+  <div class="screen-wrap">
+    <div class="phone" id="phone1">
+      <canvas id="c1"></canvas>
+      <div class="scanline"></div>
+      <div class="corner corner-tl"></div><div class="corner corner-tr"></div>
+      <div class="corner corner-bl"></div><div class="corner corner-br"></div>
+      <div class="screen-login">
+        <div class="login-glow"></div>
+        <div class="login-icon">🏃</div>
+        <div class="login-title">나온김에 런</div>
+        <div class="login-sub">Run · Claim · Conquer</div>
+        <div class="google-btn">
+          <div class="google-icon"></div>
+          Google로 시작하기
+        </div>
+      </div>
+    </div>
+    <div class="screen-label">로그인</div>
+  </div>
+
+  <!-- ② 지도 (대기) -->
+  <div class="screen-wrap">
+    <div class="phone" id="phone2">
+      <canvas id="c2"></canvas>
+      <div class="scanline"></div>
+      <div class="corner corner-tl"></div><div class="corner corner-tr"></div>
+      <div class="corner corner-bl"></div><div class="corner corner-br"></div>
+
+      <!-- map layer -->
+      <div class="map-bg">
+        <div class="map-grid"></div>
+        <div class="map-glow-center"></div>
+        <!-- territory polygon SVG -->
+        <svg class="territory" width="260" height="520" viewBox="0 0 260 520">
+          <polygon points="70,240 100,190 150,185 190,210 200,260 175,300 120,310 80,280"
+            fill="rgba(74,122,255,0.12)" stroke="rgba(74,122,255,0.5)" stroke-width="1.5"
+            filter="url(#glow)"/>
+          <polygon points="130,280 155,265 180,275 185,305 160,320 130,315"
+            fill="rgba(100,60,220,0.12)" stroke="rgba(100,60,220,0.4)" stroke-width="1"/>
+          <defs>
+            <filter id="glow">
+              <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+              <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+          </defs>
+        </svg>
+      </div>
+
+      <div class="topbar">
+        <div class="topbar-title">나온김에 런</div>
+        <div class="icon-btn">📋</div>
+      </div>
+
+      <div class="gps-dot" style="top:44%;left:50%">
+        <div class="gps-dot-outer">
+          <div class="gps-dot-inner"></div>
+        </div>
+      </div>
+
+      <div class="my-loc-btn">◎</div>
+
+      <div class="bottom-area">
+        <div class="run-btn start">▶&nbsp; 시작</div>
+      </div>
+    </div>
+    <div class="screen-label">지도 (대기)</div>
+  </div>
+
+  <!-- ③ 트래킹 중 -->
+  <div class="screen-wrap">
+    <div class="phone" id="phone3">
+      <canvas id="c3"></canvas>
+      <div class="scanline"></div>
+      <div class="corner corner-tl"></div><div class="corner corner-tr"></div>
+      <div class="corner corner-bl"></div><div class="corner corner-br"></div>
+
+      <div class="map-bg">
+        <div class="map-grid"></div>
+        <div class="map-glow-center"></div>
+        <!-- territory -->
+        <svg width="260" height="520" viewBox="0 0 260 520" style="position:absolute;inset:0;z-index:4">
+          <polygon points="70,240 100,190 150,185 190,210 200,260 175,300 120,310 80,280"
+            fill="rgba(74,122,255,0.12)" stroke="rgba(74,122,255,0.4)" stroke-width="1.5" filter="url(#glow2)"/>
+          <!-- tracking path -->
+          <polyline points="130,290 145,270 158,255 170,240 175,220 168,205"
+            fill="none" stroke="rgba(74,255,200,0.9)" stroke-width="2"
+            stroke-dasharray="4,3"
+            filter="url(#pathglow)"/>
+          <!-- current pos -->
+          <circle cx="168" cy="205" r="6" fill="rgba(74,122,255,0.3)"/>
+          <circle cx="168" cy="205" r="4" fill="#4a7aff" stroke="white" stroke-width="1.5"/>
+          <defs>
+            <filter id="glow2"><feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+              <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+            <filter id="pathglow"><feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+              <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+          </defs>
+        </svg>
+      </div>
+
+      <div class="topbar">
+        <div class="topbar-title">● REC</div>
+      </div>
+
+      <div class="bottom-area">
+        <div class="tracking-stats">
+          <div class="stat-card">
+            <div class="stat-val">2.34</div>
+            <div class="stat-unit">km</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-val">18:42</div>
+            <div class="stat-unit">time</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-val">3,241</div>
+            <div class="stat-unit">m²</div>
+          </div>
+        </div>
+        <div class="run-btn stop">■&nbsp; 종료</div>
+      </div>
+    </div>
+    <div class="screen-label">트래킹 중</div>
+  </div>
+
+  <!-- ④ 기록 -->
+  <div class="screen-wrap">
+    <div class="phone" id="phone4">
+      <canvas id="c4"></canvas>
+      <div class="scanline"></div>
+      <div class="corner corner-tl"></div><div class="corner corner-tr"></div>
+      <div class="corner corner-bl"></div><div class="corner corner-br"></div>
+
+      <div class="screen-history" style="position:absolute;z-index:2">
+        <div class="history-header">
+          <div class="history-title">기록</div>
+          <div class="history-sub">TOTAL 12 RUNS · 28.4 KM</div>
+        </div>
+        <div class="history-list">
+
+          <div class="run-card">
+            <div class="run-card-share">↗</div>
+            <div class="run-card-date">2026 · 06 · 08</div>
+            <div class="run-card-row">
+              <div class="run-card-dist">5.2<span>km</span></div>
+              <div class="run-card-area">4,812 m²</div>
+            </div>
+          </div>
+
+          <div class="run-card">
+            <div class="run-card-share">↗</div>
+            <div class="run-card-date">2026 · 06 · 06</div>
+            <div class="run-card-row">
+              <div class="run-card-dist">3.8<span>km</span></div>
+              <div class="run-card-area">2,340 m²</div>
+            </div>
+          </div>
+
+          <div class="run-card">
+            <div class="run-card-share">↗</div>
+            <div class="run-card-date">2026 · 06 · 04</div>
+            <div class="run-card-row">
+              <div class="run-card-dist">7.1<span>km</span></div>
+              <div class="run-card-area">8,091 m²</div>
+            </div>
+          </div>
+
+          <div class="run-card" style="opacity:0.5">
+            <div class="run-card-share">↗</div>
+            <div class="run-card-date">2026 · 06 · 01</div>
+            <div class="run-card-row">
+              <div class="run-card-dist">4.0<span>km</span></div>
+              <div class="run-card-area">3,150 m²</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+    <div class="screen-label">기록</div>
+  </div>
+
+  <!-- ⑤ 공유 웹 -->
+  <div class="screen-wrap">
+    <div class="phone" id="phone5">
+      <canvas id="c5"></canvas>
+      <div class="scanline"></div>
+      <div class="corner corner-tl"></div><div class="corner corner-tr"></div>
+      <div class="corner corner-bl"></div><div class="corner corner-br"></div>
+
+      <div class="share-map">
+        <div class="map-grid" style="opacity:0.5"></div>
+        <svg width="260" height="520" viewBox="0 0 260 520" style="position:absolute;inset:0;z-index:3">
+          <polygon points="60,150 90,110 145,100 200,130 215,185 195,235 145,255 85,240 65,200"
+            fill="rgba(74,122,255,0.1)" stroke="rgba(74,122,255,0.45)" stroke-width="1.5" filter="url(#glow3)"/>
+          <polygon points="90,200 115,185 160,188 180,210 175,240 140,255 95,245"
+            fill="rgba(100,60,220,0.1)" stroke="rgba(100,60,220,0.35)" stroke-width="1"/>
+          <polygon points="160,140 190,130 210,150 205,175 175,185 155,170"
+            fill="rgba(74,200,255,0.08)" stroke="rgba(74,200,255,0.3)" stroke-width="1"/>
+          <defs>
+            <filter id="glow3"><feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+              <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+          </defs>
+        </svg>
+        <div style="position:absolute;top:18px;left:16px;z-index:10;font-size:11px;color:rgba(74,122,255,0.5);letter-spacing:2px">village-run-app.web.app</div>
+      </div>
+
+      <div class="share-panel">
+        <div class="share-user">
+          <div class="avatar">🏃</div>
+          <div>
+            <div class="share-username">heewon.lee</div>
+            <div class="share-total">총 점령 면적 24,394 m²</div>
+          </div>
+        </div>
+        <div class="share-stats">
+          <div class="share-stat">
+            <div class="share-stat-num">12</div>
+            <div class="share-stat-label">runs</div>
+          </div>
+          <div class="share-stat">
+            <div class="share-stat-num">28.4</div>
+            <div class="share-stat-label">km</div>
+          </div>
+          <div class="share-stat">
+            <div class="share-stat-num">24k</div>
+            <div class="share-stat-label">m²</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="screen-label">공유 웹</div>
+  </div>
+
+</div>
+
+<script>
+// Particle system for each phone
+const phones = [
+  { canvasId: 'c1', count: 40 },
+  { canvasId: 'c2', count: 25 },
+  { canvasId: 'c3', count: 25 },
+  { canvasId: 'c4', count: 20 },
+  { canvasId: 'c5', count: 20 },
+];
+
+phones.forEach(({ canvasId, count }) => {
+  const canvas = document.getElementById(canvasId);
+  const ctx = canvas.getContext('2d');
+  const phone = canvas.parentElement;
+
+  function resize() {
+    canvas.width = phone.offsetWidth;
+    canvas.height = phone.offsetHeight;
+  }
+  resize();
+
+  const particles = Array.from({ length: count }, () => ({
+    x: Math.random() * canvas.width,
+    y: Math.random() * canvas.height,
+    r: Math.random() * 1.2 + 0.3,
+    vx: (Math.random() - 0.5) * 0.3,
+    vy: (Math.random() - 0.5) * 0.3,
+    a: Math.random() * 0.5 + 0.1,
+    color: Math.random() < 0.7
+      ? `rgba(74,122,255,`
+      : Math.random() < 0.5
+        ? `rgba(100,60,220,`
+        : `rgba(74,200,255,`,
+  }));
+
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // connect nearby particles
+    for (let i = 0; i < particles.length; i++) {
+      for (let j = i + 1; j < particles.length; j++) {
+        const dx = particles[i].x - particles[j].x;
+        const dy = particles[i].y - particles[j].y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < 60) {
+          ctx.beginPath();
+          ctx.moveTo(particles[i].x, particles[i].y);
+          ctx.lineTo(particles[j].x, particles[j].y);
+          const alpha = (1 - dist / 60) * 0.12;
+          ctx.strokeStyle = `rgba(74,122,255,${alpha})`;
+          ctx.lineWidth = 0.5;
+          ctx.stroke();
+        }
+      }
+    }
+
+    particles.forEach(p => {
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = p.color + p.a + ')';
+      ctx.fill();
+
+      // glow
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r * 3, 0, Math.PI * 2);
+      ctx.fillStyle = p.color + (p.a * 0.1) + ')';
+      ctx.fill();
+
+      p.x += p.vx;
+      p.y += p.vy;
+      if (p.x < 0) p.x = canvas.width;
+      if (p.x > canvas.width) p.x = 0;
+      if (p.y < 0) p.y = canvas.height;
+      if (p.y > canvas.height) p.y = 0;
+    });
+
+    requestAnimationFrame(draw);
+  }
+
+  draw();
+});
+
+// REC blink
+const recTitle = document.querySelector('.phone:nth-child(1) .topbar-title');
+// find the REC topbar
+document.querySelectorAll('.topbar-title').forEach(el => {
+  if (el.textContent.includes('REC')) {
+    setInterval(() => {
+      el.style.opacity = el.style.opacity === '0.2' ? '1' : '0.2';
+    }, 600);
+  }
+});
+</script>
+</body>
+</html>
