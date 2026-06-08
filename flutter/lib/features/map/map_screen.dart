@@ -6,6 +6,12 @@ import 'package:latlong2/latlong.dart';
 import 'map_controller.dart' as app_map;
 import '../history/history_screen.dart';
 
+const _green = Color(0xFF5C9E3A);
+const _greenLight = Color(0xFFEBF5E0);
+const _textDark = Color(0xFF1E2E14);
+const _textSoft = Color(0xFF8AAA70);
+const _border = Color(0xFFDCE8D0);
+
 class MapScreen extends StatefulWidget {
   const MapScreen({super.key});
 
@@ -44,10 +50,13 @@ class _MapScreenState extends State<MapScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final top = MediaQuery.of(context).padding.top;
+    final bottom = MediaQuery.of(context).padding.bottom;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F0E8),
       body: Stack(
         children: [
+          // ── 지도 ──
           FlutterMap(
             mapController: _mapController,
             options: const MapOptions(
@@ -72,7 +81,7 @@ class _MapScreenState extends State<MapScreen> {
                   markers: [
                     Marker(
                       point: _controller.currentLocation!,
-                      child: _CurrentLocationDot(),
+                      child: const _LocationDot(),
                     ),
                   ],
                 ),
@@ -81,8 +90,8 @@ class _MapScreenState extends State<MapScreen> {
                   polylines: [
                     Polyline(
                       points: _controller.currentPath,
-                      color: const Color(0xFF0064FF),
-                      strokeWidth: 4,
+                      color: const Color(0xFFE87820),
+                      strokeWidth: 3.5,
                       pattern: const StrokePattern.dotted(),
                     ),
                   ],
@@ -91,7 +100,7 @@ class _MapScreenState extends State<MapScreen> {
                   markers: [
                     Marker(
                       point: _controller.currentPath.last,
-                      child: _CurrentLocationDot(),
+                      child: const _LocationDot(),
                     ),
                   ],
                 ),
@@ -99,59 +108,62 @@ class _MapScreenState extends State<MapScreen> {
             ],
           ),
 
-          // 상단 앱 타이틀바 (카카오맵 스타일)
+          // ── 상단 바 ──
           Positioned(
             top: 0,
             left: 0,
             right: 0,
             child: Container(
               padding: EdgeInsets.only(
-                top: MediaQuery.of(context).padding.top + 8,
+                top: top + 8,
                 left: 16,
                 right: 16,
                 bottom: 12,
               ),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.08),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
+              color: Colors.white,
               child: Row(
                 children: [
-                  const Text(
-                    '나온김에 런',
+                  Text(
+                    _controller.isTracking ? '● 기록 중' : '나온김에 런',
                     style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xFF191F28),
+                      fontSize: 17,
+                      fontWeight: FontWeight.w800,
+                      color: _controller.isTracking
+                          ? const Color(0xFFD94020)
+                          : _textDark,
                       letterSpacing: -0.3,
                     ),
                   ),
                   const Spacer(),
-                  _IconBtn(
-                    icon: Icons.history,
-                    heroTag: 'history',
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const HistoryScreen()),
+                  if (!_controller.isTracking)
+                    GestureDetector(
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => const HistoryScreen()),
+                      ),
+                      child: Container(
+                        width: 34,
+                        height: 34,
+                        decoration: BoxDecoration(
+                          color: _greenLight,
+                          borderRadius: BorderRadius.circular(11),
+                          border: Border.all(color: _border),
+                        ),
+                        child: const Icon(Icons.history_rounded,
+                            size: 18, color: _green),
+                      ),
                     ),
-                  ),
                 ],
               ),
             ),
           ),
 
-          // 내 위치로 이동 버튼 (우하단, 카카오맵 스타일)
+          // ── 내 위치 버튼 ──
           Positioned(
-            right: 16,
-            bottom: 120,
-            child: _MapIconButton(
-              icon: Icons.my_location,
+            right: 14,
+            bottom: bottom + 104,
+            child: GestureDetector(
               onTap: () {
                 if (_controller.currentLocation != null) {
                   _mapController.move(_controller.currentLocation!, 15);
@@ -159,28 +171,62 @@ class _MapScreenState extends State<MapScreen> {
                   _controller.fetchCurrentLocation();
                 }
               },
+              child: Container(
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: _border),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Color(0x18000000),
+                      blurRadius: 10,
+                      offset: Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: const Icon(Icons.my_location_rounded,
+                    size: 18, color: _green),
+              ),
             ),
           ),
 
-          // 시작/종료 버튼 (하단 중앙)
+          // ── 하단 패널 ──
           Positioned(
-            bottom: 40,
+            bottom: 0,
             left: 0,
             right: 0,
-            child: Center(
-              child: _controller.isTracking
-                  ? _RunButton(
-                      label: '종료',
-                      icon: Icons.stop_rounded,
-                      color: const Color(0xFFFF4444),
-                      onTap: _controller.stopRun,
-                    )
-                  : _RunButton(
-                      label: '시작',
-                      icon: Icons.play_arrow_rounded,
-                      color: const Color(0xFF0064FF),
-                      onTap: _controller.startRun,
-                    ),
+            child: Container(
+              padding: EdgeInsets.fromLTRB(14, 14, 14, bottom + 20),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                border: Border(
+                  top: BorderSide(color: _border),
+                ),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (_controller.isTracking) ...[
+                    _StatRow(controller: _controller),
+                    const SizedBox(height: 10),
+                  ],
+                  _controller.isTracking
+                      ? _MainButton(
+                          label: '완료',
+                          color: const Color(0xFFE04828),
+                          shadowColor: const Color(0x40E04828),
+                          onTap: _controller.stopRun,
+                        )
+                      : _MainButton(
+                          label: '달리기 시작',
+                          color: _green,
+                          shadowColor: const Color(0x405C9E3A),
+                          onTap: _controller.startRun,
+                        ),
+                ],
+              ),
             ),
           ),
         ],
@@ -201,8 +247,8 @@ class _MapScreenState extends State<MapScreen> {
       if (points.isEmpty) return null;
       return Polygon(
         points: points,
-        color: const Color(0xFF0064FF).withValues(alpha: 0.20),
-        borderColor: const Color(0xFF0064FF),
+        color: _green.withValues(alpha: 0.18),
+        borderColor: _green,
         borderStrokeWidth: 2,
       );
     } catch (e, st) {
@@ -212,8 +258,9 @@ class _MapScreenState extends State<MapScreen> {
   }
 }
 
-// 현재 위치 파란 점 (카카오맵 스타일: 흰 테두리 + 파란 점 + 외곽 반투명 원)
-class _CurrentLocationDot extends StatelessWidget {
+class _LocationDot extends StatelessWidget {
+  const _LocationDot();
+
   @override
   Widget build(BuildContext context) {
     return Stack(
@@ -223,19 +270,20 @@ class _CurrentLocationDot extends StatelessWidget {
           width: 24,
           height: 24,
           decoration: BoxDecoration(
-            color: const Color(0xFF0064FF).withValues(alpha: 0.18),
+            color: _green.withValues(alpha: 0.18),
             shape: BoxShape.circle,
           ),
         ),
         Container(
-          width: 14,
-          height: 14,
+          width: 12,
+          height: 12,
           decoration: BoxDecoration(
-            color: const Color(0xFF0064FF),
+            color: _green,
             shape: BoxShape.circle,
-            border: Border.all(color: Colors.white, width: 2.5),
+            border: Border.all(color: Colors.white, width: 2),
             boxShadow: const [
-              BoxShadow(color: Colors.black26, blurRadius: 4, offset: Offset(0, 1)),
+              BoxShadow(
+                  color: Color(0x405C9E3A), blurRadius: 4, offset: Offset(0, 1)),
             ],
           ),
         ),
@@ -244,77 +292,83 @@ class _CurrentLocationDot extends StatelessWidget {
   }
 }
 
-// 상단 아이콘 버튼
-class _IconBtn extends StatelessWidget {
-  final IconData icon;
-  final String heroTag;
-  final VoidCallback onTap;
-
-  const _IconBtn({
-    required this.icon,
-    required this.heroTag,
-    required this.onTap,
-  });
+class _StatRow extends StatelessWidget {
+  final app_map.MapController controller;
+  const _StatRow({required this.controller});
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 36,
-        height: 36,
-        decoration: BoxDecoration(
-          color: const Color(0xFFF5F5F5),
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Icon(icon, size: 20, color: const Color(0xFF191F28)),
-      ),
+    final path = controller.currentPath;
+    final dist = _calcDist(path);
+    return Row(
+      children: [
+        _Chip(value: (dist / 1000).toStringAsFixed(2), unit: 'km'),
+        const SizedBox(width: 8),
+        _Chip(value: _elapsed(controller), unit: 'time'),
+        const SizedBox(width: 8),
+        _Chip(value: '—', unit: 'm²'),
+      ],
     );
   }
+
+  double _calcDist(List points) {
+    if (points.length < 2) return 0;
+    double d = 0;
+    for (int i = 1; i < points.length; i++) {
+      d += const Distance().as(LengthUnit.Meter, points[i - 1], points[i]);
+    }
+    return d;
+  }
+
+  String _elapsed(app_map.MapController c) => '—';
 }
 
-// 지도 위 플로팅 아이콘 버튼 (카카오맵 원형 흰 버튼)
-class _MapIconButton extends StatelessWidget {
-  final IconData icon;
-  final VoidCallback onTap;
-
-  const _MapIconButton({required this.icon, required this.onTap});
+class _Chip extends StatelessWidget {
+  final String value;
+  final String unit;
+  const _Chip({required this.value, required this.unit});
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
+    return Expanded(
       child: Container(
-        width: 44,
-        height: 44,
+        padding: const EdgeInsets.symmetric(vertical: 9),
         decoration: BoxDecoration(
-          color: Colors.white,
-          shape: BoxShape.circle,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.15),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
+          color: _greenLight,
+          borderRadius: BorderRadius.circular(13),
+          border: Border.all(color: _border),
+        ),
+        child: Column(
+          children: [
+            Text(value,
+                style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w900,
+                    color: _textDark)),
+            const SizedBox(height: 1),
+            Text(unit,
+                style: const TextStyle(
+                    fontSize: 9,
+                    fontWeight: FontWeight.w800,
+                    color: _textSoft,
+                    letterSpacing: 1.2)),
           ],
         ),
-        child: Icon(icon, size: 22, color: const Color(0xFF0064FF)),
       ),
     );
   }
 }
 
-// 시작/종료 버튼 (카카오맵 하단 둥근 버튼)
-class _RunButton extends StatelessWidget {
+class _MainButton extends StatelessWidget {
   final String label;
-  final IconData icon;
   final Color color;
+  final Color shadowColor;
   final VoidCallback onTap;
 
-  const _RunButton({
+  const _MainButton({
     required this.label,
-    required this.icon,
     required this.color,
+    required this.shadowColor,
     required this.onTap,
   });
 
@@ -323,33 +377,24 @@ class _RunButton extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 16),
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 15),
         decoration: BoxDecoration(
           color: color,
-          borderRadius: BorderRadius.circular(30),
+          borderRadius: BorderRadius.circular(18),
           boxShadow: [
-            BoxShadow(
-              color: color.withValues(alpha: 0.4),
-              blurRadius: 16,
-              offset: const Offset(0, 4),
-            ),
+            BoxShadow(color: shadowColor, blurRadius: 16, offset: const Offset(0, 4)),
           ],
         ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, color: Colors.white, size: 22),
-            const SizedBox(width: 8),
-            Text(
-              label,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 17,
-                fontWeight: FontWeight.w700,
-                letterSpacing: -0.3,
-              ),
-            ),
-          ],
+        child: Text(
+          label,
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w900,
+            color: Colors.white,
+            letterSpacing: 0.2,
+          ),
         ),
       ),
     );
