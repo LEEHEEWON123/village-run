@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Village Run — App Workflow Overview</title>
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg:        #0f1117;
+      --surface:   #1a1d27;
+      --surface2:  #22263a;
+      --border:    #2e3248;
+      --text:      #e2e8f0;
+      --muted:     #8892a4;
+      --col-auth:  #4285F4;
+      --col-run:   #34A853;
+      --col-store: #FBBC05;
+      --col-share: #EA4335;
+      --radius:    10px;
+      --gap:       18px;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue",
+                   Arial, "Noto Sans KR", sans-serif;
+      font-size: 14px;
+      line-height: 1.6;
+      min-height: 100vh;
+      padding: 40px 24px 60px;
+    }
+
+    /* ── Header ─────────────────────────────────────────── */
+    .page-header {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+
+    .page-header .eyebrow {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    .page-header h1 {
+      font-size: clamp(24px, 4vw, 38px);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: #fff;
+      margin-bottom: 10px;
+    }
+
+    .page-header h1 span {
+      background: linear-gradient(90deg, #4285F4, #34A853, #FBBC05, #EA4335);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .page-header p {
+      color: var(--muted);
+      font-size: 15px;
+      max-width: 560px;
+      margin: 0 auto;
+    }
+
+    /* ── Grid layout ─────────────────────────────────────── */
+    .workflow-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--gap);
+      max-width: 1200px;
+      margin: 0 auto 48px;
+    }
+
+    @media (max-width: 900px) {
+      .workflow-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 560px) {
+      .workflow-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* ── Column ──────────────────────────────────────────── */
+    .col {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    /* Column header */
+    .col-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 16px 18px;
+      border-radius: var(--radius) var(--radius) 0 0;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-bottom: none;
+      position: relative;
+    }
+
+    .col-header::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 18px;
+      right: 18px;
+      height: 2px;
+      border-radius: 2px;
+    }
+
+    .col--auth   .col-header::after { background: var(--col-auth);  }
+    .col--run    .col-header::after { background: var(--col-run);   }
+    .col--store  .col-header::after { background: var(--col-store); }
+    .col--share  .col-header::after { background: var(--col-share); }
+
+    .col-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 17px;
+      flex-shrink: 0;
+    }
+
+    .col--auth  .col-icon { background: rgba(66,133,244,.18);  color: var(--col-auth);  }
+    .col--run   .col-icon { background: rgba(52,168,83,.18);   color: var(--col-run);   }
+    .col--store .col-icon { background: rgba(251,188,5,.18);   color: var(--col-store); }
+    .col--share .col-icon { background: rgba(234,67,53,.18);   color: var(--col-share); }
+
+    .col-title {
+      font-weight: 700;
+      font-size: 15px;
+      color: #fff;
+    }
+
+    .col-subtitle {
+      font-size: 10px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    /* Step list wrapper */
+    .col-body {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-top: none;
+      border-radius: 0 0 var(--radius) var(--radius);
+      padding: 8px 10px 16px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    /* ── Step card ────────────────────────────────────────── */
+    .step {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 11px 13px;
+      position: relative;
+    }
+
+    .step-label {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      margin-bottom: 3px;
+    }
+
+    .col--auth  .step-label { color: var(--col-auth);  }
+    .col--run   .step-label { color: var(--col-run);   }
+    .col--store .step-label { color: var(--col-store); }
+    .col--share .step-label { color: var(--col-share); }
+
+    .step-title {
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .step-desc {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .step-code {
+      display: inline-block;
+      margin-top: 5px;
+      font-family: "SF Mono", "Fira Code", "Consolas", monospace;
+      font-size: 11px;
+      background: rgba(0,0,0,.35);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 3px 7px;
+      color: #a8c4ff;
+      word-break: break-all;
+    }
+
+    /* Sub-bullets inside a step */
+    .step-bullets {
+      margin-top: 6px;
+      padding-left: 0;
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .step-bullets li {
+      font-size: 11.5px;
+      color: var(--muted);
+      padding-left: 14px;
+      position: relative;
+    }
+
+    .step-bullets li::before {
+      content: '▸';
+      position: absolute;
+      left: 0;
+      color: var(--border);
+      font-size: 10px;
+      top: 1px;
+    }
+
+    .step-bullets li strong {
+      color: #c4cfe8;
+    }
+
+    /* Arrow connector between steps */
+    .step-arrow {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 26px;
+      color: var(--border);
+      font-size: 18px;
+      flex-shrink: 0;
+      user-select: none;
+    }
+
+    .col--auth  .step-arrow { color: rgba(66,133,244,.5);  }
+    .col--run   .step-arrow { color: rgba(52,168,83,.5);   }
+    .col--store .step-arrow { color: rgba(251,188,5,.5);   }
+    .col--share .step-arrow { color: rgba(234,67,53,.5);   }
+
+    /* ── Nested sub-column (for branch steps) ─────────────── */
+    .step-branch {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-top: 7px;
+    }
+
+    .branch-card {
+      background: rgba(0,0,0,.25);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 7px 10px;
+    }
+
+    .branch-title {
+      font-size: 11.5px;
+      font-weight: 700;
+      color: #c4cfe8;
+      margin-bottom: 2px;
+    }
+
+    .branch-desc {
+      font-size: 11px;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    /* ── Tech badges ─────────────────────────────────────── */
+    .tech-section {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .tech-section h2 {
+      text-align: center;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+      margin-bottom: 20px;
+    }
+
+    .tech-badges {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 7px 14px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--text);
+      transition: border-color 0.2s;
+    }
+
+    .badge-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    /* Divider */
+    .section-divider {
+      max-width: 1200px;
+      margin: 36px auto;
+      border: none;
+      border-top: 1px solid var(--border);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── Page Header ───────────────────────────────────── -->
+  <header class="page-header">
+    <span class="eyebrow">Developer Docs</span>
+    <h1>Village Run — <span>App Workflow</span></h1>
+    <p>Google 로그인부터 러닝 기록, 데이터 저장, 공유까지 전체 흐름을 한눈에 확인하세요.</p>
+  </header>
+
+  <!-- ── Workflow Grid ──────────────────────────────────── -->
+  <section class="workflow-grid">
+
+    <!-- ── Col 1: 인증 ───────────────────────────────── -->
+    <div class="col col--auth">
+      <div class="col-header">
+        <div class="col-icon">🔐</div>
+        <div>
+          <div class="col-title">인증</div>
+          <div class="col-subtitle">Authentication</div>
+        </div>
+      </div>
+      <div class="col-body">
+
+        <div class="step">
+          <div class="step-label">Step 1</div>
+          <div class="step-title">Google 로그인 버튼 클릭</div>
+          <div class="step-desc">앱 시작 화면에서 사용자가 "Google로 계속하기" 버튼을 탭</div>
+        </div>
+
+        <div class="step-arrow">↓</div>
+
+        <div class="step">
+          <div class="step-label">Step 2</div>
+          <div class="step-title">GoogleSignIn.signIn()</div>
+          <div class="step-desc">Flutter google_sign_in 패키지를 통해 Google OAuth 흐름 시작</div>
+          <span class="step-code">GoogleSignIn().signIn()</span>
+        </div>
+
+        <div class="step-arrow">↓</div>
+
+        <div class="step">
+          <div class="step-label">Step 3</div>
+          <div class="step-title">Supabase signInWithIdToken()</div>
+          <div class="step-desc">Google ID Token을 Supabase Auth에 전달하여 세션 교환</div>
+          <span class="step-code">supabase.auth.signInWithIdToken()</span>
+        </div>
+
+        <div class="step-arrow">↓</div>
+
+        <div class="step">
+          <div class="step-label">Step 4</div>
+          <div class="step-title">세션 발급 → 지도 화면 이동</div>
+          <div class="step-desc">JWT 세션 수신 후 앱 상태가 인증 완료로 전환되어 지도 화면으로 라우팅</div>
+          <ul class="step-bullets">
+            <li><strong>onAuthStateChange</strong> 이벤트 수신</li>
+            <li>Navigator.pushReplacement → MapScreen</li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── Col 2: 러닝 기록 ──────────────────────────── -->
+    <div class="col col--run">
+      <div class="col-header">
+        <div class="col-icon">🏃</div>
+        <div>
+          <div class="col-title">러닝 기록</div>
+          <div class="col-subtitle">Run Tracking</div>
+        </div>
+      </div>
+      <div class="col-body">
+
+        <div class="step">
+          <div class="step-label">Step 1</div>
+          <div class="step-title">"시작" 버튼 탭</div>
+          <div class="step-desc">지도 화면 하단 FAB 탭으로 러닝 세션 시작</div>
+        </div>
+
+        <div class="step-arrow">↓</div>
+
+        <div class="step">
+          <div class="step-label">Step 2</div>
+          <div class="step-title">GPS 스트림 시작</div>
+          <div class="step-desc">Geolocator 위치 스트림 구독, 노이즈 제거 필터 적용</div>
+          <ul class="step-bullets">
+            <li>최소 이동 거리 <strong>3 m</strong> 필터</li>
+            <li>distanceFilter: 3 설정</li>
+          </ul>
+        </div>
+
+        <div class="step-arrow">↓</div>
+
+        <div class="step">
+          <div class="step-label">Step 3</div>
+          <div class="step-title">경로 실시간 점선 표시</div>
+          <div class="step-desc">새 좌표가 추가될 때마다 지도 위 Polyline을 실시간 업데이트</div>
+          <ul class="step-bullets">
+            <li>Polyline 점선 스타일 렌더링</li>
+            <li>카메라 자동 추적 (follow mode)</li>
+          </ul>
+        </div>
+
+        <div class="step-arrow">↓</div>
+
+        <div class="step">
+          <div class="step-label">Step 4</div>
+          <div class="step-title">"종료" 버튼 탭</div>
+          <div class="step-desc">러닝 세션 종료, 마지막 좌표 기록 후 영역 계산 시작</div>
+        </div>
+
+        <div class="step-arrow">↓</div>
+
+        <div class="step">
+          <div class="step-label">Step 5</div>
+          <div class="step-title">경로 닫힘 + 영역 계산</div>
+          <div class="step-desc">경로 유형을 감지하여 적합한 알고리즘으로 면적 계산</div>
+          <div class="step-branch">
+            <div class="branch-card">
+              <div class="branch-title">루프 감지 (≤ 20 m)</div>
+              <div class="branch-desc">시작점 ↔ 끝점이 20 m 이내 → 폴리곤으로 닫고 <strong>Shoelace</strong> 공식으로 면적 계산</div>
+            </div>
+            <div class="branch-card">
+              <div class="branch-title">직선 경로</div>
+              <div class="branch-desc">경로 길이 × <strong>10 m 버퍼</strong> 적용하여 면적 추정</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="step-arrow">↓</div>
+
+        <div class="step">
+          <div class="step-label">Step 6</div>
+          <div class="step-title">GeoJSON 생성</div>
+          <div class="step-desc">경로 및 영역 폴리곤을 표준 GeoJSON Feature 포맷으로 직렬화</div>
+          <span class="step-code">{ "type": "Feature", … }</span>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── Col 3: 데이터 저장 ────────────────────────── -->
+    <div class="col col--store">
+      <div class="col-header">
+        <div class="col-icon">💾</div>
+        <div>
+          <div class="col-title">데이터 저장</div>
+          <div class="col-subtitle">Storage</div>
+        </div>
+      </div>
+      <div class="col-body">
+
+        <div class="step">
+          <div class="step-label">Step 1</div>
+          <div class="step-title">runs 테이블 INSERT</div>
+          <div class="step-desc">Supabase PostgreSQL에 러닝 레코드 저장</div>
+          <ul class="step-bullets">
+            <li><strong>path</strong> — 좌표 배열 (jsonb)</li>
+            <li><strong>territory_geojson</strong> — 영역 GeoJSON (text)</li>
+            <li><strong>distance_m</strong> — 총 거리 (m)</li>
+            <li><strong>area_m2</strong> — 영역 면적 (m²)</li>
+          </ul>
+        </div>
+
+        <div class="step-arrow">↓</div>
+
+        <div class="step">
+          <div class="step-label">Step 2</div>
+          <div class="step-title">upsert_user_territory() RPC</div>
+          <div class="step-desc">PostGIS 기반 서버 함수 호출로 누적 영역 갱신</div>
+          <span class="step-code">supabase.rpc('upsert_user_territory')</span>
+          <ul class="step-bullets">
+            <li><strong>ST_Union</strong>으로 기존 영역과 신규 합산</li>
+            <li><strong>user_territory</strong> 테이블 upsert</li>
+            <li>conflict_target: user_id</li>
+          </ul>
+        </div>
+
+        <div class="step-arrow">↓</div>
+
+        <div class="step">
+          <div class="step-label">Step 3</div>
+          <div class="step-title">지도에 파란 오버레이 추가</div>
+          <div class="step-desc">저장 완료 후 지도 위에 사용자 누적 영역을 파란 반투명 폴리곤으로 렌더링</div>
+          <ul class="step-bullets">
+            <li>fill color: <strong>#4285F4</strong> @ 30% opacity</li>
+            <li>stroke: <strong>#4285F4</strong> @ 80% opacity</li>
+            <li>Polygon / MultiPolygon 모두 지원</li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── Col 4: 공유 ───────────────────────────────── -->
+    <div class="col col--share">
+      <div class="col-header">
+        <div class="col-icon">📤</div>
+        <div>
+          <div class="col-title">공유</div>
+          <div class="col-subtitle">Share</div>
+        </div>
+      </div>
+      <div class="col-body">
+
+        <div class="step">
+          <div class="step-label">Step 1</div>
+          <div class="step-title">기록 화면 → 공유 버튼 탭</div>
+          <div class="step-desc">러닝 결과 카드에서 공유 아이콘 탭</div>
+        </div>
+
+        <div class="step-arrow">↓</div>
+
+        <div class="step">
+          <div class="step-label">Step 2</div>
+          <div class="step-title">공유 URL 생성</div>
+          <div class="step-desc">사용자 ID를 포함한 딥링크 URL 조합</div>
+          <span class="step-code">village-run-app.web.app/share/{userId}</span>
+        </div>
+
+        <div class="step-arrow">↓</div>
+
+        <div class="step">
+          <div class="step-label">Step 3</div>
+          <div class="step-title">Share.share() 호출</div>
+          <div class="step-desc">Flutter share_plus 패키지로 OS 기본 공유 시트 표시</div>
+          <span class="step-code">Share.share(url, subject: '...')</span>
+        </div>
+
+        <div class="step-arrow">↓</div>
+
+        <div class="step">
+          <div class="step-label">Step 4</div>
+          <div class="step-title">브라우저에서 열기</div>
+          <div class="step-desc">수신자가 링크를 탭하면 모바일 브라우저에서 웹 앱 로딩</div>
+        </div>
+
+        <div class="step-arrow">↓</div>
+
+        <div class="step">
+          <div class="step-label">Step 5</div>
+          <div class="step-title">Firebase Hosting → index.html</div>
+          <div class="step-desc">Firebase Hosting이 SPA index.html을 서빙, 클라이언트 라우팅 처리</div>
+          <ul class="step-bullets">
+            <li>rewrite rule: <strong>/**</strong> → index.html</li>
+          </ul>
+        </div>
+
+        <div class="step-arrow">↓</div>
+
+        <div class="step">
+          <div class="step-label">Step 6</div>
+          <div class="step-title">Supabase REST API 조회</div>
+          <div class="step-desc">userId 기준으로 runs 및 user_territory 데이터 fetch</div>
+          <span class="step-code">GET /rest/v1/runs?user_id=eq.{id}</span>
+        </div>
+
+        <div class="step-arrow">↓</div>
+
+        <div class="step">
+          <div class="step-label">Step 7</div>
+          <div class="step-title">Leaflet.js 지도 + 카드 리스트</div>
+          <div class="step-desc">조회 데이터를 기반으로 인터랙티브 지도와 기록 카드 리스트 렌더링</div>
+          <ul class="step-bullets">
+            <li><strong>Leaflet.js</strong> — 영역 폴리곤 지도 표시</li>
+            <li>기록 카드: 날짜, 거리, 면적</li>
+            <li>반응형 웹 레이아웃</li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ── Divider ────────────────────────────────────────── -->
+  <hr class="section-divider" />
+
+  <!-- ── Tech Stack Badges ─────────────────────────────── -->
+  <section class="tech-section">
+    <h2>Tech Stack</h2>
+    <div class="tech-badges">
+      <span class="badge">
+        <span class="badge-dot" style="background:#54C5F8;"></span>
+        Flutter
+      </span>
+      <span class="badge">
+        <span class="badge-dot" style="background:#3FCF8E;"></span>
+        Supabase
+      </span>
+      <span class="badge">
+        <span class="badge-dot" style="background:#336791;"></span>
+        PostgreSQL
+      </span>
+      <span class="badge">
+        <span class="badge-dot" style="background:#7DB3CC;"></span>
+        PostGIS
+      </span>
+      <span class="badge">
+        <span class="badge-dot" style="background:#FFCA28;"></span>
+        Firebase Hosting
+      </span>
+      <span class="badge">
+        <span class="badge-dot" style="background:#1DA462;"></span>
+        Leaflet.js
+      </span>
+      <span class="badge">
+        <span class="badge-dot" style="background:#4285F4;"></span>
+        Google Sign-In
+      </span>
+      <span class="badge">
+        <span class="badge-dot" style="background:#EA4335;"></span>
+        share_plus
+      </span>
+    </div>
+  </section>
+
+</body>
+</html>
