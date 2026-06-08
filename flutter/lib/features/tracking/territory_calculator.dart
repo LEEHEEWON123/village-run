@@ -30,9 +30,12 @@ class TerritoryCalculator {
       final geoJson = _makePolygonGeoJson(coords);
       return TerritoryResult(areaM2: area, isLoop: true, geoJson: geoJson);
     } else {
-      final length = _pathLengthM(path);
-      final area = length * 10.0; // 좌우 5m씩 = 너비 10m
       final bufferedCoords = _buildBufferPolygon(path);
+      // Compute area from the actual polygon, not a rectangle approximation
+      final bufferedPoints = bufferedCoords
+          .map((c) => LatLng(c[1], c[0]))
+          .toList();
+      final area = _polygonAreaM2(bufferedPoints);
       final geoJson = _makePolygonGeoJson(bufferedCoords);
       return TerritoryResult(areaM2: area, isLoop: false, geoJson: geoJson);
     }
@@ -43,15 +46,6 @@ class TerritoryCalculator {
     if (path.length < 3) return false;
     final dist = const Distance().as(LengthUnit.Meter, path.first, path.last);
     return dist <= 20.0;
-  }
-
-  // 경로 전체 길이 (m)
-  static double _pathLengthM(List<LatLng> path) {
-    double total = 0;
-    for (int i = 0; i < path.length - 1; i++) {
-      total += const Distance().as(LengthUnit.Meter, path[i], path[i + 1]);
-    }
-    return total;
   }
 
   // 폴리곤 면적 (Shoelace, 구면 근사)
