@@ -35,7 +35,7 @@ class TrackingService {
       if (Platform.isAndroid) {
         settings = AndroidSettings(
           accuracy: LocationAccuracy.high,
-          distanceFilter: 3,
+          distanceFilter: 1,
           foregroundNotificationConfig: const ForegroundNotificationConfig(
             notificationTitle: '내땅내밟',
             notificationText: '달리는 중... 위치를 기록하고 있어요',
@@ -45,7 +45,7 @@ class TrackingService {
       } else {
         settings = const LocationSettings(
           accuracy: LocationAccuracy.high,
-          distanceFilter: 3,
+          distanceFilter: 1,
         );
       }
 

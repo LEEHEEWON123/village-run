@@ -26,6 +26,7 @@ class _MapScreenState extends State<MapScreen> {
   final _controller = app_map.MapController();
   final _mapController = MapController();
   bool _centeredOnUser = false;
+  int? _countdown; // 3, 2, 1, null = 없음
 
   @override
   void initState() {
@@ -74,10 +75,21 @@ class _MapScreenState extends State<MapScreen> {
       builder: (_) => _ModeSheet(
         onSelect: (mode) {
           Navigator.pop(context);
-          _controller.startRun(mode);
+          _startCountdown(mode);
         },
       ),
     );
+  }
+
+  Future<void> _startCountdown(RunMode mode) async {
+    for (int i = 3; i >= 1; i--) {
+      if (!mounted) return;
+      setState(() => _countdown = i);
+      await Future.delayed(const Duration(seconds: 1));
+    }
+    if (!mounted) return;
+    setState(() => _countdown = null);
+    _controller.startRun(mode);
   }
 
   @override
@@ -230,6 +242,24 @@ class _MapScreenState extends State<MapScreen> {
             ),
           ),
 
+          // ── 카운트다운 오버레이 ──
+          if (_countdown != null)
+            Positioned.fill(
+              child: Container(
+                color: const Color(0x88000000),
+                child: Center(
+                  child: Text(
+                    '$_countdown',
+                    style: const TextStyle(
+                      fontSize: 120,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+
           // ── 하단 패널 ──
           Positioned(
             bottom: 0,
@@ -263,7 +293,7 @@ class _MapScreenState extends State<MapScreen> {
                           label: '달리기 시작',
                           color: _green,
                           shadowColor: const Color(0x405C9E3A),
-                          onTap: _onStartTap,
+                          onTap: _countdown != null ? () {} : _onStartTap,
                         ),
                 ],
               ),
