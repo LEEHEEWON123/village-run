@@ -39,53 +39,63 @@ class RunRecord {
 }
 
 class RunRepository {
+  String get _userId {
+    final user = supabase.auth.currentUser;
+    if (user == null) throw StateError('Not authenticated');
+    return user.id;
+  }
+
   Future<void> saveRun({
     required DateTime startedAt,
     required DateTime endedAt,
     required List<LatLng> path,
     required TerritoryResult territory,
   }) async {
-    final userId = supabase.auth.currentUser!.id;
+    try {
+      final userId = _userId;
 
-    final pathJson = path
-        .map((p) => {'lat': p.latitude, 'lng': p.longitude})
-        .toList();
+      final pathJson = path
+          .map((p) => {'lat': p.latitude, 'lng': p.longitude})
+          .toList();
 
-    // Calculate total path distance
-    double distanceM = 0;
-    for (int i = 0; i < path.length - 1; i++) {
-      distanceM += const Distance().as(LengthUnit.Meter, path[i], path[i + 1]);
+      // Calculate total path distance
+      double distanceM = 0;
+      for (int i = 0; i < path.length - 1; i++) {
+        distanceM += const Distance().as(LengthUnit.Meter, path[i], path[i + 1]);
+      }
+
+      // Save run record
+      await supabase.from('runs').insert({
+        'user_id': userId,
+        'started_at': startedAt.toUtc().toIso8601String(),
+        'ended_at': endedAt.toUtc().toIso8601String(),
+        'distance_m': distanceM,
+        'area_m2': territory.areaM2,
+        'path': pathJson,
+        'territory': territory.geoJson,           // PostGIS geometry
+        'territory_geojson': territory.geoJson,   // text for web page
+      });
+
+      // Update cumulative territory via DB function
+      await supabase.rpc('upsert_user_territory', params: {
+        'p_user_id': userId,
+        'p_new_territory': territory.geoJson,
+        'p_new_area': territory.areaM2,
+      });
+    } on Object catch (e) {
+      throw Exception('러닝 저장 실패: $e');
     }
-
-    // Save run record
-    await supabase.from('runs').insert({
-      'user_id': userId,
-      'started_at': startedAt.toIso8601String(),
-      'ended_at': endedAt.toIso8601String(),
-      'distance_m': distanceM,
-      'area_m2': territory.areaM2,
-      'path': pathJson,
-      'territory': territory.geoJson,           // PostGIS geometry
-      'territory_geojson': territory.geoJson,   // text for web page
-    });
-
-    // Update cumulative territory via DB function
-    await supabase.rpc('upsert_user_territory', params: {
-      'p_user_id': userId,
-      'p_new_territory': territory.geoJson,
-      'p_new_area': territory.areaM2,
-    });
   }
 
   Future<List<RunRecord>> fetchRuns() async {
-    final userId = supabase.auth.currentUser!.id;
+    final userId = _userId;
     final data = await supabase
         .from('runs')
         .select('id, user_id, started_at, ended_at, distance_m, area_m2, path, territory_geojson')
         .eq('user_id', userId)
         .order('started_at', ascending: false);
 
-    return (data as List).map((j) => RunRecord.fromJson(j as Map<String, dynamic>)).toList();
+    return data.map((j) => RunRecord.fromJson(j)).toList();
   }
 
   Future<List<RunRecord>> fetchRunsByUserId(String userId) async {
@@ -95,6 +105,6 @@ class RunRepository {
         .eq('user_id', userId)
         .order('started_at', ascending: false);
 
-    return (data as List).map((j) => RunRecord.fromJson(j as Map<String, dynamic>)).toList();
+    return data.map((j) => RunRecord.fromJson(j)).toList();
   }
 }
