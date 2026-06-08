@@ -1,5 +1,6 @@
 // flutter/lib/features/map/map_controller.dart
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 import '../tracking/tracking_service.dart';
 import '../tracking/territory_calculator.dart';
@@ -15,7 +16,29 @@ class MapController extends ChangeNotifier {
   List<String> _completedTerritories = [];
   List<String> get completedTerritories => List.unmodifiable(_completedTerritories);
 
+  LatLng? _currentLocation;
+  LatLng? get currentLocation => _currentLocation;
+
   DateTime? _startedAt;
+
+  Future<void> fetchCurrentLocation() async {
+    try {
+      var permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+      }
+      if (permission == LocationPermission.denied ||
+          permission == LocationPermission.deniedForever) {
+        return;
+      }
+
+      final pos = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
+      _currentLocation = LatLng(pos.latitude, pos.longitude);
+      notifyListeners();
+    } catch (_) {}
+  }
 
   Future<void> loadTerritories() async {
     final runs = await _repository.fetchRuns();

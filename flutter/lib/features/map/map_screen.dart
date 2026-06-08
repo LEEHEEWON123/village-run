@@ -15,16 +15,24 @@ class MapScreen extends StatefulWidget {
 
 class _MapScreenState extends State<MapScreen> {
   final _controller = app_map.MapController();
+  final _mapController = MapController();
+  bool _centeredOnUser = false;
 
   @override
   void initState() {
     super.initState();
     _controller.addListener(_onControllerUpdate);
     _controller.loadTerritories();
+    _controller.fetchCurrentLocation();
   }
 
   void _onControllerUpdate() {
-    if (mounted) setState(() {});
+    if (!mounted) return;
+    setState(() {});
+    if (!_centeredOnUser && _controller.currentLocation != null) {
+      _centeredOnUser = true;
+      _mapController.move(_controller.currentLocation!, 15);
+    }
   }
 
   @override
@@ -40,6 +48,7 @@ class _MapScreenState extends State<MapScreen> {
       body: Stack(
         children: [
           FlutterMap(
+            mapController: _mapController,
             options: const MapOptions(
               initialCenter: LatLng(37.5665, 126.9780),
               initialZoom: 15,
@@ -55,6 +64,26 @@ class _MapScreenState extends State<MapScreen> {
                     .whereType<Polygon>()
                     .toList(),
               ),
+              if (_controller.currentLocation != null && !_controller.isTracking)
+                MarkerLayer(
+                  markers: [
+                    Marker(
+                      point: _controller.currentLocation!,
+                      child: Container(
+                        width: 16,
+                        height: 16,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF4285F4),
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white, width: 2),
+                          boxShadow: const [
+                            BoxShadow(color: Colors.black26, blurRadius: 4),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               if (_controller.currentPath.isNotEmpty) ...[
                 PolylineLayer(
                   polylines: [
