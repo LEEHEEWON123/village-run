@@ -6,12 +6,12 @@ import 'package:flutter_naver_map/flutter_naver_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:share_plus/share_plus.dart';
 
-const _green = Color(0xFF5C9E3A);
-const _textDark = Color(0xFF1E2E14);
-const _textSoft = Color(0xFF8AAA70);
-const _border = Color(0xFFDCE8D0);
-const _greenLight = Color(0xFFEBF5E0);
-const _drawColor = Color(0xFFE87820);
+const _bg     = Color(0xFF0A0A0A);
+const _card   = Color(0xFF141414);
+const _card2  = Color(0xFF1C1C1C);
+const _muted  = Color(0x59FFFFFF);
+const _border = Color(0x12FFFFFF);
+const _orange = Color(0xFFFF6B1A);
 
 class DrawingResultScreen extends StatefulWidget {
   final List<LatLng> path;
@@ -58,7 +58,7 @@ class _DrawingResultScreenState extends State<DrawingResultScreen> {
     await controller.addOverlay(NPolylineOverlay(
       id: 'drawing_path',
       coords: coords,
-      color: _drawColor,
+      color: _orange,
       width: 5,
       lineCap: NLineCap.round,
       lineJoin: NLineJoin.round,
@@ -99,7 +99,7 @@ class _DrawingResultScreenState extends State<DrawingResultScreen> {
     final bottom = MediaQuery.of(context).padding.bottom;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: _bg,
       body: Stack(
         children: [
           // ── 지도 (캡처 대상) ──
@@ -131,7 +131,7 @@ class _DrawingResultScreenState extends State<DrawingResultScreen> {
               padding: EdgeInsets.only(
                   top: top + 8, left: 16, right: 16, bottom: 12),
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.92),
+                color: _bg.withValues(alpha: 0.92),
               ),
               child: Row(
                 children: [
@@ -141,12 +141,12 @@ class _DrawingResultScreenState extends State<DrawingResultScreen> {
                       width: 34,
                       height: 34,
                       decoration: BoxDecoration(
-                        color: _greenLight,
+                        color: _card2,
                         borderRadius: BorderRadius.circular(11),
                         border: Border.all(color: _border),
                       ),
                       child: const Icon(Icons.arrow_back_ios_new_rounded,
-                          size: 15, color: _green),
+                          size: 15, color: Colors.white),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -155,7 +155,7 @@ class _DrawingResultScreenState extends State<DrawingResultScreen> {
                     style: TextStyle(
                       fontSize: 17,
                       fontWeight: FontWeight.w800,
-                      color: _textDark,
+                      color: Colors.white,
                       letterSpacing: -0.3,
                     ),
                   ),
@@ -172,7 +172,7 @@ class _DrawingResultScreenState extends State<DrawingResultScreen> {
             child: Container(
               padding: EdgeInsets.fromLTRB(14, 16, 14, bottom + 20),
               decoration: const BoxDecoration(
-                color: Colors.white,
+                color: _card,
                 border: Border(top: BorderSide(color: _border)),
               ),
               child: Column(
@@ -186,7 +186,7 @@ class _DrawingResultScreenState extends State<DrawingResultScreen> {
                         style: const TextStyle(
                           fontSize: 28,
                           fontWeight: FontWeight.w900,
-                          color: _textDark,
+                          color: Colors.white,
                         ),
                       ),
                       const SizedBox(width: 4),
@@ -195,7 +195,7 @@ class _DrawingResultScreenState extends State<DrawingResultScreen> {
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w700,
-                          color: _textSoft,
+                          color: _muted,
                         ),
                       ),
                     ],
@@ -207,11 +207,11 @@ class _DrawingResultScreenState extends State<DrawingResultScreen> {
                       width: double.infinity,
                       padding: const EdgeInsets.symmetric(vertical: 15),
                       decoration: BoxDecoration(
-                        color: _drawColor,
+                        color: _orange,
                         borderRadius: BorderRadius.circular(18),
                         boxShadow: const [
                           BoxShadow(
-                            color: Color(0x40E87820),
+                            color: Color(0x40FF6B1A),
                             blurRadius: 16,
                             offset: Offset(0, 4),
                           ),

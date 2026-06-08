@@ -5,12 +5,12 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/constants.dart';
 import '../history/run_repository.dart';
 
-const _green = Color(0xFF5C9E3A);
-const _greenLight = Color(0xFFEBF5E0);
-const _textDark = Color(0xFF1E2E14);
-const _textSoft = Color(0xFF8AAA70);
-const _border = Color(0xFFDCE8D0);
-const _bg = Color(0xFFF7FAF3);
+const _bg     = Color(0xFF0A0A0A);
+const _card   = Color(0xFF141414);
+const _card2  = Color(0xFF1C1C1C);
+const _neon   = Color(0xFFC8F000);
+const _muted  = Color(0x59FFFFFF);
+const _border = Color(0x12FFFFFF);
 
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({super.key});
@@ -68,7 +68,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
               // ── 상단 바 ──
               SliverToBoxAdapter(
                 child: Container(
-                  color: Colors.white,
+                  color: _card,
                   padding: EdgeInsets.only(
                     top: top + 8,
                     left: 16,
@@ -83,12 +83,12 @@ class _HistoryScreenState extends State<HistoryScreen> {
                           width: 34,
                           height: 34,
                           decoration: BoxDecoration(
-                            color: _greenLight,
+                            color: _card2,
                             borderRadius: BorderRadius.circular(11),
                             border: Border.all(color: _border),
                           ),
                           child: const Icon(Icons.arrow_back_ios_new_rounded,
-                              size: 15, color: _green),
+                              size: 15, color: Colors.white),
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -97,7 +97,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                         style: TextStyle(
                           fontSize: 17,
                           fontWeight: FontWeight.w800,
-                          color: _textDark,
+                          color: Colors.white,
                           letterSpacing: -0.3,
                         ),
                       ),
@@ -108,12 +108,12 @@ class _HistoryScreenState extends State<HistoryScreen> {
                           width: 34,
                           height: 34,
                           decoration: BoxDecoration(
-                            color: _greenLight,
+                            color: _card2,
                             borderRadius: BorderRadius.circular(11),
                             border: Border.all(color: _border),
                           ),
                           child: const Icon(Icons.ios_share_rounded,
-                              size: 16, color: _green),
+                              size: 16, color: Colors.white),
                         ),
                       ),
                     ],
@@ -130,11 +130,12 @@ class _HistoryScreenState extends State<HistoryScreen> {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 18, vertical: 16),
                       decoration: BoxDecoration(
-                        color: _green,
+                        color: _card2,
                         borderRadius: BorderRadius.circular(18),
+                        border: Border.all(color: _border),
                         boxShadow: const [
                           BoxShadow(
-                            color: Color(0x305C9E3A),
+                            color: Color(0x30C8F000),
                             blurRadius: 16,
                             offset: Offset(0, 4),
                           ),
@@ -150,7 +151,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                                     style: TextStyle(
                                         fontSize: 10,
                                         fontWeight: FontWeight.w800,
-                                        color: Color(0xAAFFFFFF),
+                                        color: _muted,
                                         letterSpacing: 1)),
                                 const SizedBox(height: 3),
                                 Text(
@@ -158,7 +159,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                                   style: const TextStyle(
                                       fontSize: 22,
                                       fontWeight: FontWeight.w900,
-                                      color: Colors.white),
+                                      color: _neon),
                                 ),
                               ],
                             ),
@@ -170,7 +171,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                                   style: TextStyle(
                                       fontSize: 10,
                                       fontWeight: FontWeight.w800,
-                                      color: Color(0xAAFFFFFF),
+                                      color: _muted,
                                       letterSpacing: 1)),
                               const SizedBox(height: 3),
                               Text(
@@ -178,14 +179,14 @@ class _HistoryScreenState extends State<HistoryScreen> {
                                 style: const TextStyle(
                                     fontSize: 15,
                                     fontWeight: FontWeight.w900,
-                                    color: Colors.white),
+                                    color: _neon),
                               ),
                               Text(
                                 '${runs.length}회',
                                 style: const TextStyle(
                                     fontSize: 11,
                                     fontWeight: FontWeight.w700,
-                                    color: Color(0xAAFFFFFF)),
+                                    color: _muted),
                               ),
                             ],
                           ),
@@ -199,7 +200,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
               if (snapshot.connectionState == ConnectionState.waiting)
                 const SliverFillRemaining(
                   child: Center(
-                    child: CircularProgressIndicator(color: _green),
+                    child: CircularProgressIndicator(color: _neon),
                   ),
                 )
               else if (runs.isEmpty)
@@ -211,7 +212,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
-                        color: _textSoft,
+                        color: _muted,
                         height: 1.6,
                       ),
                     ),
@@ -261,13 +262,9 @@ class _RunCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: _card2,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: _border),
-        boxShadow: const [
-          BoxShadow(
-              color: Color(0x0A000000), blurRadius: 8, offset: Offset(0, 2)),
-        ],
       ),
       child: Row(
         children: [
@@ -275,7 +272,7 @@ class _RunCard extends StatelessWidget {
             width: 4,
             height: 38,
             decoration: BoxDecoration(
-              color: _green,
+              color: _neon,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -289,7 +286,7 @@ class _RunCard extends StatelessWidget {
                   style: const TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.w800,
-                      color: _textSoft,
+                      color: _muted,
                       letterSpacing: 0.3),
                 ),
                 const SizedBox(height: 3),
@@ -298,14 +295,14 @@ class _RunCard extends StatelessWidget {
                   style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w900,
-                      color: _textDark),
+                      color: Colors.white),
                 ),
                 Text(
                   formatArea(run.areaM2),
                   style: const TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
-                      color: _textSoft),
+                      color: _neon),
                 ),
               ],
             ),
@@ -314,11 +311,11 @@ class _RunCard extends StatelessWidget {
             width: 30,
             height: 30,
             decoration: BoxDecoration(
-              color: _greenLight,
+              color: _card2,
               borderRadius: BorderRadius.circular(10),
               border: Border.all(color: _border),
             ),
-            child: const Icon(Icons.ios_share_rounded, size: 14, color: _green),
+            child: const Icon(Icons.ios_share_rounded, size: 14, color: Colors.white),
           ),
         ],
       ),

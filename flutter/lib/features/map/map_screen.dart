@@ -9,12 +9,14 @@ import '../tracking/territory_calculator.dart';
 import '../history/history_screen.dart';
 import '../drawing/drawing_result_screen.dart';
 
-const _green = Color(0xFF5C9E3A);
-const _greenLight = Color(0xFFEBF5E0);
-const _textDark = Color(0xFF1E2E14);
-const _textSoft = Color(0xFF8AAA70);
-const _border = Color(0xFFDCE8D0);
-const _drawColor = Color(0xFFE87820);
+const _bg     = Color(0xFF0A0A0A);
+const _card   = Color(0xFF141414);
+const _card2  = Color(0xFF1C1C1C);
+const _neon   = Color(0xFFC8F000);
+const _muted  = Color(0x59FFFFFF);
+const _border = Color(0x12FFFFFF);
+const _orange = Color(0xFFFF6B1A);
+const _red    = Color(0xFFFF3B30);
 
 class MapScreen extends StatefulWidget {
   const MapScreen({super.key});
@@ -92,8 +94,8 @@ class _MapScreenState extends State<MapScreen> {
     if (loc != null &&
         (!_controller.isTracking || _controller.currentPath.isEmpty)) {
       final dotColor = _controller.isTracking
-          ? (isDrawing ? _drawColor : _green)
-          : _green;
+          ? (isDrawing ? _orange : _neon)
+          : _neon;
       final dotIcon = await NOverlayImage.fromWidget(
         widget: _LocationDot(color: dotColor),
         size: const Size(24, 24),
@@ -119,7 +121,7 @@ class _MapScreenState extends State<MapScreen> {
       final polyline = NPolylineOverlay(
         id: 'current_path',
         coords: coords,
-        color: isDrawing ? _drawColor : _green.withValues(alpha: 0.9),
+        color: isDrawing ? _orange : _neon.withValues(alpha: 0.9),
         width: isDrawing ? 5 : 4,
         lineCap: NLineCap.round,
         lineJoin: NLineJoin.round,
@@ -127,7 +129,7 @@ class _MapScreenState extends State<MapScreen> {
       );
       await nc.addOverlay(polyline);
 
-      final tailColor = isDrawing ? _drawColor : _green;
+      final tailColor = isDrawing ? _orange : _neon;
       final tailIcon = await NOverlayImage.fromWidget(
         widget: _LocationDot(color: tailColor),
         size: const Size(24, 24),
@@ -182,6 +184,7 @@ class _MapScreenState extends State<MapScreen> {
     final isDrawing = _controller.runMode == RunMode.drawing;
 
     return Scaffold(
+      backgroundColor: _bg,
       body: Stack(
         children: [
           // ── 지도 ──
@@ -208,7 +211,7 @@ class _MapScreenState extends State<MapScreen> {
             child: Container(
               padding: EdgeInsets.only(
                   top: top + 8, left: 16, right: 16, bottom: 12),
-              color: Colors.white,
+              color: _card,
               child: Row(
                 children: [
                   Text(
@@ -219,8 +222,8 @@ class _MapScreenState extends State<MapScreen> {
                       fontSize: 17,
                       fontWeight: FontWeight.w800,
                       color: _controller.isTracking
-                          ? (isDrawing ? _drawColor : const Color(0xFFD94020))
-                          : _textDark,
+                          ? (isDrawing ? _orange : _red)
+                          : _neon,
                       letterSpacing: -0.3,
                     ),
                   ),
@@ -236,12 +239,12 @@ class _MapScreenState extends State<MapScreen> {
                         width: 34,
                         height: 34,
                         decoration: BoxDecoration(
-                          color: _greenLight,
+                          color: _card2,
                           borderRadius: BorderRadius.circular(11),
                           border: Border.all(color: _border),
                         ),
                         child: const Icon(Icons.history_rounded,
-                            size: 18, color: _green),
+                            size: 18, color: Colors.white),
                       ),
                     ),
                 ],
@@ -273,18 +276,18 @@ class _MapScreenState extends State<MapScreen> {
                 width: 42,
                 height: 42,
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: _card2,
                   borderRadius: BorderRadius.circular(14),
                   border: Border.all(color: _border),
                   boxShadow: const [
                     BoxShadow(
-                        color: Color(0x18000000),
+                        color: Color(0x40000000),
                         blurRadius: 10,
                         offset: Offset(0, 3)),
                   ],
                 ),
                 child: const Icon(Icons.my_location_rounded,
-                    size: 18, color: _green),
+                    size: 18, color: Colors.white),
               ),
             ),
           ),
@@ -315,7 +318,7 @@ class _MapScreenState extends State<MapScreen> {
             child: Container(
               padding: EdgeInsets.fromLTRB(14, 14, 14, bottom + 20),
               decoration: const BoxDecoration(
-                color: Colors.white,
+                color: _card,
                 border: Border(top: BorderSide(color: _border)),
               ),
               child: Column(
@@ -328,18 +331,18 @@ class _MapScreenState extends State<MapScreen> {
                   _controller.isTracking
                       ? _MainButton(
                           label: isDrawing ? '드로잉 완료' : '완료',
-                          color: isDrawing
-                              ? _drawColor
-                              : const Color(0xFFE04828),
+                          color: isDrawing ? _orange : _red,
+                          textColor: Colors.white,
                           shadowColor: isDrawing
-                              ? const Color(0x40E87820)
-                              : const Color(0x40E04828),
+                              ? const Color(0x40FF6B1A)
+                              : const Color(0x40FF3B30),
                           onTap: _controller.stopRun,
                         )
                       : _MainButton(
                           label: '달리기 시작',
-                          color: _green,
-                          shadowColor: const Color(0x405C9E3A),
+                          color: _neon,
+                          textColor: _bg,
+                          shadowColor: const Color(0x40C8F000),
                           onTap: _countdown != null ? () {} : _onStartTap,
                         ),
                 ],
@@ -365,8 +368,8 @@ class _MapScreenState extends State<MapScreen> {
       return NPolygonOverlay(
         id: id,
         coords: coords,
-        color: _green.withValues(alpha: 0.18),
-        outlineColor: _green,
+        color: _neon.withValues(alpha: 0.12),
+        outlineColor: _neon,
         outlineWidth: 2,
       );
     } catch (e) {
@@ -478,7 +481,7 @@ class _Chip extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 9),
         decoration: BoxDecoration(
-          color: _greenLight,
+          color: _card2,
           borderRadius: BorderRadius.circular(13),
           border: Border.all(color: _border),
         ),
@@ -488,13 +491,13 @@ class _Chip extends StatelessWidget {
                 style: const TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w900,
-                    color: _textDark)),
+                    color: _neon)),
             const SizedBox(height: 1),
             Text(unit,
                 style: const TextStyle(
                     fontSize: 9,
                     fontWeight: FontWeight.w800,
-                    color: _textSoft,
+                    color: _muted,
                     letterSpacing: 1.2)),
           ],
         ),
@@ -506,12 +509,14 @@ class _Chip extends StatelessWidget {
 class _MainButton extends StatelessWidget {
   final String label;
   final Color color;
+  final Color textColor;
   final Color shadowColor;
   final VoidCallback onTap;
 
   const _MainButton({
     required this.label,
     required this.color,
+    required this.textColor,
     required this.shadowColor,
     required this.onTap,
   });
@@ -536,10 +541,10 @@ class _MainButton extends StatelessWidget {
         child: Text(
           label,
           textAlign: TextAlign.center,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w900,
-            color: Colors.white,
+            color: textColor,
             letterSpacing: 0.2,
           ),
         ),
@@ -558,7 +563,7 @@ class _ModeSheet extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.fromLTRB(12, 0, 12, 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: _card,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: _border),
       ),
@@ -580,7 +585,7 @@ class _ModeSheet extends StatelessWidget {
             style: TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.w900,
-              color: _textDark,
+              color: Colors.white,
             ),
           ),
           const SizedBox(height: 16),
@@ -593,7 +598,7 @@ class _ModeSheet extends StatelessWidget {
                     emoji: '🗺️',
                     title: '땅따먹기',
                     desc: '달린 경로로\n내 땅을 만들어요',
-                    color: _green,
+                    color: _neon,
                     onTap: () => onSelect(RunMode.territory),
                   ),
                 ),
@@ -603,7 +608,7 @@ class _ModeSheet extends StatelessWidget {
                     emoji: '🎨',
                     title: '드로잉',
                     desc: '달리면서\n그림을 그려요',
-                    color: _drawColor,
+                    color: _orange,
                     onTap: () => onSelect(RunMode.drawing),
                   ),
                 ),
@@ -639,9 +644,9 @@ class _ModeCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 14),
         decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.06),
+          color: color.withValues(alpha: 0.08),
           borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: color.withValues(alpha: 0.25)),
+          border: Border.all(color: color.withValues(alpha: 0.2)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -659,7 +664,7 @@ class _ModeCard extends StatelessWidget {
                 style: const TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.w700,
-                  color: _textSoft,
+                  color: _muted,
                   height: 1.4,
                 )),
           ],

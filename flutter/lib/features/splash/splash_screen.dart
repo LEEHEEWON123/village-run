@@ -4,6 +4,9 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../map/map_screen.dart';
 import '../auth/login_screen.dart';
 
+const _neon  = Color(0xFFC8F000);
+const _muted = Color(0x59FFFFFF);
+
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
@@ -111,7 +114,7 @@ class _SplashScreenState extends State<SplashScreen>
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [Color(0xFF6abf45), Color(0xFF4a8c2e)],
+            colors: [Color(0xFF0A0A0A), Color(0xFF141414)],
           ),
         ),
         child: Stack(
@@ -181,13 +184,13 @@ class _SplashScreenState extends State<SplashScreen>
                           style: TextStyle(
                             fontSize: 52,
                             fontWeight: FontWeight.w900,
-                            color: Colors.white,
+                            color: _neon,
                             letterSpacing: -2,
                             shadows: [
                               Shadow(
-                                color: Color(0x33000000),
+                                color: Color(0x60C8F000),
                                 offset: Offset(0, 4),
-                                blurRadius: 12,
+                                blurRadius: 20,
                               ),
                             ],
                           ),
@@ -208,7 +211,7 @@ class _SplashScreenState extends State<SplashScreen>
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w700,
-                          color: Color(0xAAFFFFFF),
+                          color: _muted,
                           letterSpacing: 2,
                         ),
                       ),
@@ -277,7 +280,7 @@ class _LoadingDotsState extends State<_LoadingDots>
               width: 8,
               height: 8,
               decoration: BoxDecoration(
-                color: Colors.white.withValues(
+                color: _neon.withValues(
                     alpha: (0.3 + scale * 0.7).clamp(0.0, 1.0)),
                 shape: BoxShape.circle,
               ),
@@ -297,7 +300,7 @@ class _SpeedLinePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.06)
+      ..color = _neon.withValues(alpha: 0.06)
       ..style = PaintingStyle.fill;
 
     final path1 = Path()
@@ -309,7 +312,7 @@ class _SpeedLinePainter extends CustomPainter {
     canvas.drawPath(path1, paint);
 
     final paint2 = Paint()
-      ..color = Colors.white.withValues(alpha: 0.04)
+      ..color = _neon.withValues(alpha: 0.04)
       ..style = PaintingStyle.fill;
 
     final path2 = Path()
