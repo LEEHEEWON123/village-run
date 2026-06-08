@@ -1,7 +1,7 @@
 // flutter/lib/features/map/map_screen.dart
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_naver_map/flutter_naver_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'map_controller.dart' as app_map;
 import '../tracking/run_mode.dart';
@@ -24,9 +24,9 @@ class MapScreen extends StatefulWidget {
 
 class _MapScreenState extends State<MapScreen> {
   final _controller = app_map.MapController();
-  final _mapController = MapController();
+  NaverMapController? _naverController;
   bool _centeredOnUser = false;
-  int? _countdown; // 3, 2, 1, null = 없음
+  int? _countdown;
 
   @override
   void initState() {
@@ -39,11 +39,20 @@ class _MapScreenState extends State<MapScreen> {
   void _onControllerUpdate() {
     if (!mounted) return;
     setState(() {});
+    _syncOverlays();
 
     // 내 위치 최초 이동
     if (!_centeredOnUser && _controller.currentLocation != null) {
       _centeredOnUser = true;
-      _mapController.move(_controller.currentLocation!, 15);
+      _naverController?.updateCamera(
+        NCameraUpdate.scrollAndZoomTo(
+          target: NLatLng(
+            _controller.currentLocation!.latitude,
+            _controller.currentLocation!.longitude,
+          ),
+          zoom: 17,
+        ),
+      );
     }
 
     // 드로잉 완료 → 결과 화면으로
@@ -58,6 +67,79 @@ class _MapScreenState extends State<MapScreen> {
           ),
         );
       });
+    }
+  }
+
+  Future<void> _syncOverlays() async {
+    final nc = _naverController;
+    if (nc == null) return;
+    final ctx = context; // capture before async gap
+
+    await nc.clearOverlays();
+
+    final isDrawing = _controller.runMode == RunMode.drawing;
+
+    // 땅따먹기 폴리곤
+    for (int i = 0; i < _controller.completedTerritories.length; i++) {
+      final polygon = _geoJsonToNPolygon(
+          _controller.completedTerritories[i], 'territory_$i');
+      if (polygon != null) await nc.addOverlay(polygon);
+    }
+
+    // 현재 위치 마커 (추적 전 or 경로 없을 때)
+    final loc = _controller.currentLocation;
+    if (loc != null &&
+        (!_controller.isTracking || _controller.currentPath.isEmpty)) {
+      final dotColor = _controller.isTracking
+          ? (isDrawing ? _drawColor : _green)
+          : _green;
+      final dotIcon = await NOverlayImage.fromWidget(
+        widget: _LocationDot(color: dotColor),
+        size: const Size(24, 24),
+        context: ctx,
+      );
+      if (!mounted) return;
+      final dot = NMarker(
+        id: 'current_loc',
+        position: NLatLng(loc.latitude, loc.longitude),
+        icon: dotIcon,
+        anchor: const NPoint(0.5, 0.5),
+      );
+      await nc.addOverlay(dot);
+    }
+
+    // 경로 선 + 끝점 마커
+    final path = _controller.currentPath;
+    if (path.isNotEmpty) {
+      final coords = path
+          .map((p) => NLatLng(p.latitude, p.longitude))
+          .toList();
+
+      final polyline = NPolylineOverlay(
+        id: 'current_path',
+        coords: coords,
+        color: isDrawing ? _drawColor : _green.withValues(alpha: 0.9),
+        width: isDrawing ? 5 : 4,
+        lineCap: NLineCap.round,
+        lineJoin: NLineJoin.round,
+        pattern: isDrawing ? [] : [4, 6],
+      );
+      await nc.addOverlay(polyline);
+
+      final tailColor = isDrawing ? _drawColor : _green;
+      final tailIcon = await NOverlayImage.fromWidget(
+        widget: _LocationDot(color: tailColor),
+        size: const Size(24, 24),
+        context: ctx,
+      );
+      if (!mounted) return;
+      final tail = NMarker(
+        id: 'path_tail',
+        position: coords.last,
+        icon: tailIcon,
+        anchor: const NPoint(0.5, 0.5),
+      );
+      await nc.addOverlay(tail);
     }
   }
 
@@ -102,67 +184,19 @@ class _MapScreenState extends State<MapScreen> {
       body: Stack(
         children: [
           // ── 지도 ──
-          FlutterMap(
-            mapController: _mapController,
-            options: const MapOptions(
-              initialCenter: LatLng(37.5665, 126.9780),
-              initialZoom: 15,
+          NaverMap(
+            options: const NaverMapViewOptions(
+              initialCameraPosition: NCameraPosition(
+                target: NLatLng(37.5665, 126.9780),
+                zoom: 15,
+              ),
+              mapType: NMapType.basic,
+              activeLayerGroups: [NLayerGroup.building, NLayerGroup.transit],
             ),
-            children: [
-              TileLayer(
-                urlTemplate:
-                    'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
-                subdomains: const ['a', 'b', 'c', 'd'],
-                userAgentPackageName: 'com.villagerun.app',
-              ),
-              // 땅따먹기 폴리곤
-              PolygonLayer(
-                polygons: _controller.completedTerritories
-                    .map(_geoJsonToPolygon)
-                    .whereType<Polygon>()
-                    .toList(),
-              ),
-              // 현재 위치 점 (대기 중 or 추적 중이지만 경로 아직 없을 때)
-              if (_controller.currentLocation != null &&
-                  (!_controller.isTracking || _controller.currentPath.isEmpty))
-                MarkerLayer(
-                  markers: [
-                    Marker(
-                      point: _controller.currentLocation!,
-                      child: _LocationDot(
-                          color: _controller.isTracking
-                              ? (isDrawing ? _drawColor : _green)
-                              : _green),
-                    ),
-                  ],
-                ),
-              // 경로 선
-              if (_controller.currentPath.isNotEmpty) ...[
-                PolylineLayer(
-                  polylines: [
-                    Polyline(
-                      points: _controller.currentPath,
-                      color: isDrawing ? _drawColor : _green.withValues(alpha: 0.9),
-                      strokeWidth: isDrawing ? 5 : 3.5,
-                      strokeCap: StrokeCap.round,
-                      strokeJoin: StrokeJoin.round,
-                      pattern: isDrawing
-                          ? const StrokePattern.solid()
-                          : const StrokePattern.dotted(),
-                    ),
-                  ],
-                ),
-                MarkerLayer(
-                  markers: [
-                    Marker(
-                      point: _controller.currentPath.last,
-                      child: _LocationDot(
-                          color: isDrawing ? _drawColor : _green),
-                    ),
-                  ],
-                ),
-              ],
-            ],
+            onMapReady: (controller) {
+              _naverController = controller;
+              _syncOverlays();
+            },
           ),
 
           // ── 상단 바 ──
@@ -221,7 +255,15 @@ class _MapScreenState extends State<MapScreen> {
             child: GestureDetector(
               onTap: () {
                 if (_controller.currentLocation != null) {
-                  _mapController.move(_controller.currentLocation!, 15);
+                  _naverController?.updateCamera(
+                    NCameraUpdate.scrollAndZoomTo(
+                      target: NLatLng(
+                        _controller.currentLocation!.latitude,
+                        _controller.currentLocation!.longitude,
+                      ),
+                      zoom: 17,
+                    ),
+                  );
                 } else {
                   _controller.fetchCurrentLocation();
                 }
@@ -308,25 +350,26 @@ class _MapScreenState extends State<MapScreen> {
     );
   }
 
-  Polygon? _geoJsonToPolygon(String geoJson) {
+  NPolygonOverlay? _geoJsonToNPolygon(String geoJson, String id) {
     try {
       final decoded = jsonDecode(geoJson) as Map<String, dynamic>;
       final rawCoords = (decoded['coordinates'] as List).first as List;
-      final points = rawCoords
-          .map((c) => LatLng(
+      final coords = rawCoords
+          .map((c) => NLatLng(
                 (c[1] as num).toDouble(),
                 (c[0] as num).toDouble(),
               ))
           .toList();
-      if (points.isEmpty) return null;
-      return Polygon(
-        points: points,
+      if (coords.isEmpty) return null;
+      return NPolygonOverlay(
+        id: id,
+        coords: coords,
         color: _green.withValues(alpha: 0.18),
-        borderColor: _green,
-        borderStrokeWidth: 2,
+        outlineColor: _green,
+        outlineWidth: 2,
       );
-    } catch (e, st) {
-      debugPrint('_geoJsonToPolygon: $e\n$st');
+    } catch (e) {
+      debugPrint('_geoJsonToNPolygon: $e');
       return null;
     }
   }

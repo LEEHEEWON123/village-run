@@ -2,7 +2,7 @@
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_naver_map/flutter_naver_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -36,24 +36,46 @@ class _DrawingResultScreenState extends State<DrawingResultScreen> {
     return d / 1000;
   }
 
-  CameraFit _cameraFit() {
+  NCameraPosition _initialCamera() {
     final lats = widget.path.map((p) => p.latitude);
     final lngs = widget.path.map((p) => p.longitude);
-    final sw = LatLng(lats.reduce((a, b) => a < b ? a : b),
-        lngs.reduce((a, b) => a < b ? a : b));
-    final ne = LatLng(lats.reduce((a, b) => a > b ? a : b),
-        lngs.reduce((a, b) => a > b ? a : b));
-    return CameraFit.bounds(
-      bounds: LatLngBounds(sw, ne),
-      padding: const EdgeInsets.all(60),
+    final centerLat =
+        (lats.reduce((a, b) => a + b)) / widget.path.length;
+    final centerLng =
+        (lngs.reduce((a, b) => a + b)) / widget.path.length;
+    return NCameraPosition(
+      target: NLatLng(centerLat, centerLng),
+      zoom: 15,
+    );
+  }
+
+  Future<void> _onMapReady(NaverMapController controller) async {
+    final coords = widget.path
+        .map((p) => NLatLng(p.latitude, p.longitude))
+        .toList();
+
+    // 경로 폴리라인
+    await controller.addOverlay(NPolylineOverlay(
+      id: 'drawing_path',
+      coords: coords,
+      color: _drawColor,
+      width: 5,
+      lineCap: NLineCap.round,
+      lineJoin: NLineJoin.round,
+    ));
+
+    // 경계에 맞게 카메라 이동
+    final bounds = NLatLngBounds.from(coords);
+    await controller.updateCamera(
+      NCameraUpdate.fitBounds(bounds,
+          padding: const EdgeInsets.all(60)),
     );
   }
 
   Future<void> _shareImage() async {
     setState(() => _sharing = true);
     try {
-      // 잠깐 기다려서 렌더 완료
-      await Future.delayed(const Duration(milliseconds: 100));
+      await Future.delayed(const Duration(milliseconds: 300));
       final boundary = _repaintKey.currentContext!.findRenderObject()
           as RenderRepaintBoundary;
       final image = await boundary.toImage(pixelRatio: 3.0);
@@ -85,29 +107,17 @@ class _DrawingResultScreenState extends State<DrawingResultScreen> {
             bottom: 130 + bottom,
             child: RepaintBoundary(
               key: _repaintKey,
-              child: FlutterMap(
-                options: MapOptions(
-                  initialCameraFit: _cameraFit(),
+              child: NaverMap(
+                options: NaverMapViewOptions(
+                  initialCameraPosition: _initialCamera(),
+                  mapType: NMapType.basic,
+                  activeLayerGroups: [
+                    NLayerGroup.building,
+                    NLayerGroup.transit,
+                  ],
+                  consumeSymbolTapEvents: false,
                 ),
-                children: [
-                  TileLayer(
-                    urlTemplate:
-                        'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
-                    subdomains: const ['a', 'b', 'c', 'd'],
-                    userAgentPackageName: 'com.villagerun.app',
-                  ),
-                  PolylineLayer(
-                    polylines: [
-                      Polyline(
-                        points: widget.path,
-                        color: _drawColor,
-                        strokeWidth: 5,
-                        strokeCap: StrokeCap.round,
-                        strokeJoin: StrokeJoin.round,
-                      ),
-                    ],
-                  ),
-                ],
+                onMapReady: _onMapReady,
               ),
             ),
           ),
@@ -168,7 +178,6 @@ class _DrawingResultScreenState extends State<DrawingResultScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // 거리 표시
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -192,7 +201,6 @@ class _DrawingResultScreenState extends State<DrawingResultScreen> {
                     ],
                   ),
                   const SizedBox(height: 14),
-                  // 공유 버튼
                   GestureDetector(
                     onTap: _sharing ? null : _shareImage,
                     child: Container(
