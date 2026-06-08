@@ -124,7 +124,7 @@ class _MapScreenState extends State<MapScreen> {
               child: Row(
                 children: [
                   Text(
-                    _controller.isTracking ? '● 기록 중' : '나온김에 런',
+                    _controller.isTracking ? '● 기록 중' : '내땅내밟',
                     style: TextStyle(
                       fontSize: 17,
                       fontWeight: FontWeight.w800,
