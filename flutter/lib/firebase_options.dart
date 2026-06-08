@@ -50,19 +50,18 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyA0fepGZJaLHC09m_K66VGb5pOJkoJIIGw',
-    appId: '1:1023212235678:android:2dfc323b6e1bbaf7d2848f',
-    messagingSenderId: '1023212235678',
-    projectId: 'village-run-f512d',
-    storageBucket: 'village-run-f512d.firebasestorage.app',
+    apiKey: 'AIzaSyBNfantvvazNiLOnEnJ5mEGcQcDw-GhJ-Q',
+    appId: '1:546699141670:android:37384abb1b255d7223fce7',
+    messagingSenderId: '546699141670',
+    projectId: 'village-run-d90a9',
+    storageBucket: 'village-run-d90a9.firebasestorage.app',
   );
-
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyD9f93QfHRNaIjKx6gIIObvn0SInKEdfos',
-    appId: '1:1023212235678:ios:9f9d6a48737fe87ad2848f',
-    messagingSenderId: '1023212235678',
-    projectId: 'village-run-f512d',
-    storageBucket: 'village-run-f512d.firebasestorage.app',
+    apiKey: 'AIzaSyCRPp2QOF6qVBMZzefEmw0UnS-S85OYSxk',
+    appId: '1:546699141670:ios:1b9d0ba54ea1029a23fce7',
+    messagingSenderId: '546699141670',
+    projectId: 'village-run-d90a9',
+    storageBucket: 'village-run-d90a9.firebasestorage.app',
     iosBundleId: 'com.villagerun.villageRun',
   );
 }
