@@ -68,9 +68,9 @@ class _LoginScreenState extends State<LoginScreen> {
         Navigator.of(context).pushReplacementNamed('/map');
       }
     } catch (e) {
-      if (mounted) {
+      if (mounted && !e.toString().contains('취소')) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('로그인 실패: $e')),
+          const SnackBar(content: Text('로그인에 실패했습니다. 다시 시도해 주세요.')),
         );
       }
     } finally {

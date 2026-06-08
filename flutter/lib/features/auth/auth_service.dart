@@ -19,7 +19,7 @@ class AuthService {
     return Supabase.instance.client.auth.signInWithIdToken(
       provider: OAuthProvider.google,
       idToken: googleAuth.idToken!,
-      accessToken: googleAuth.accessToken,
+      accessToken: googleAuth.accessToken!,
     );
   }
 
