@@ -5,6 +5,7 @@ import 'package:flutter_naver_map/flutter_naver_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'map_controller.dart' as app_map;
 import '../tracking/run_mode.dart';
+import '../tracking/territory_calculator.dart';
 import '../history/history_screen.dart';
 import '../drawing/drawing_result_screen.dart';
 
@@ -422,16 +423,36 @@ class _StatRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final path = controller.currentPath;
     final dist = _calcDist(path);
+    final isDrawing = controller.runMode == RunMode.drawing;
+
+    if (isDrawing) {
+      return Row(
+        children: [
+          _Chip(value: (dist / 1000).toStringAsFixed(2), unit: 'km'),
+          const SizedBox(width: 8),
+          _Chip(value: '${path.length}', unit: 'pts'),
+          const SizedBox(width: 8),
+          const _Chip(value: '🎨', unit: 'draw'),
+        ],
+      );
+    }
+
+    // 땅따먹기 모드: 실시간 면적
+    final areaM2 = path.length >= 2
+        ? TerritoryCalculator.calculate(path).areaM2
+        : 0.0;
+    final areaStr = areaM2 >= 10000
+        ? (areaM2 / 10000).toStringAsFixed(2)
+        : areaM2.toStringAsFixed(0);
+    final areaUnit = areaM2 >= 10000 ? '㎢×0.01' : 'm²';
+
     return Row(
       children: [
         _Chip(value: (dist / 1000).toStringAsFixed(2), unit: 'km'),
         const SizedBox(width: 8),
-        _Chip(value: '${path.length}', unit: 'pts'),
+        _Chip(value: areaStr, unit: areaUnit),
         const SizedBox(width: 8),
-        _Chip(
-          value: controller.runMode == RunMode.drawing ? '🎨' : '🗺️',
-          unit: controller.runMode == RunMode.drawing ? 'draw' : 'map',
-        ),
+        const _Chip(value: '🗺️', unit: 'map'),
       ],
     );
   }
