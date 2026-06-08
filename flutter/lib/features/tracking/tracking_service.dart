@@ -15,6 +15,8 @@ class TrackingService {
   /// Starts tracking. Sets isTracking = true immediately.
   /// Starts GPS stream on real devices (permission request is async).
   void startTracking() {
+    _positionSubscription?.cancel();  // cancel any existing GPS stream
+    _positionSubscription = null;     // clear the reference
     _points.clear();
     _isTracking = true;
     _startGpsStream(); // fire-and-forget, non-blocking
