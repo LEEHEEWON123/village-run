@@ -1,21 +1,14 @@
 // flutter/lib/app.dart
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'features/auth/login_screen.dart';
 
-// Stubs — will be replaced in Tasks 3 and 7
-class _LoginScreenStub extends StatelessWidget {
-  const _LoginScreenStub();
+// MapScreen stub — will be replaced in Task 7
+class MapScreenStub extends StatelessWidget {
+  const MapScreenStub({super.key});
   @override
   Widget build(BuildContext context) => const Scaffold(
-    body: Center(child: Text('Login Screen (TODO)')),
-  );
-}
-
-class _MapScreenStub extends StatelessWidget {
-  const _MapScreenStub();
-  @override
-  Widget build(BuildContext context) => const Scaffold(
-    body: Center(child: Text('Map Screen (TODO)')),
+    body: Center(child: Text('Map Screen (coming soon)')),
   );
 }
 
@@ -30,9 +23,12 @@ class VillageRunApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF4285F4)),
         useMaterial3: true,
       ),
+      routes: {
+        '/map': (_) => const MapScreenStub(),
+      },
       home: Supabase.instance.client.auth.currentSession == null
-          ? const _LoginScreenStub()
-          : const _MapScreenStub(),
+          ? const LoginScreen()
+          : const MapScreenStub(),
     );
   }
 }
