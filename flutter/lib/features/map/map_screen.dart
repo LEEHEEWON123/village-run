@@ -4,13 +4,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'map_controller.dart' as app_map;
+import '../tracking/run_mode.dart';
 import '../history/history_screen.dart';
+import '../drawing/drawing_result_screen.dart';
 
 const _green = Color(0xFF5C9E3A);
 const _greenLight = Color(0xFFEBF5E0);
 const _textDark = Color(0xFF1E2E14);
 const _textSoft = Color(0xFF8AAA70);
 const _border = Color(0xFFDCE8D0);
+const _drawColor = Color(0xFFE87820);
 
 class MapScreen extends StatefulWidget {
   const MapScreen({super.key});
@@ -35,9 +38,25 @@ class _MapScreenState extends State<MapScreen> {
   void _onControllerUpdate() {
     if (!mounted) return;
     setState(() {});
+
+    // 내 위치 최초 이동
     if (!_centeredOnUser && _controller.currentLocation != null) {
       _centeredOnUser = true;
       _mapController.move(_controller.currentLocation!, 15);
+    }
+
+    // 드로잉 완료 → 결과 화면으로
+    if (_controller.completedDrawingPath != null) {
+      final path = _controller.completedDrawingPath!;
+      _controller.clearDrawingPath();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => DrawingResultScreen(path: path),
+          ),
+        );
+      });
     }
   }
 
@@ -48,10 +67,24 @@ class _MapScreenState extends State<MapScreen> {
     super.dispose();
   }
 
+  void _onStartTap() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _ModeSheet(
+        onSelect: (mode) {
+          Navigator.pop(context);
+          _controller.startRun(mode);
+        },
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final top = MediaQuery.of(context).padding.top;
     final bottom = MediaQuery.of(context).padding.bottom;
+    final isDrawing = _controller.runMode == RunMode.drawing;
 
     return Scaffold(
       body: Stack(
@@ -70,29 +103,36 @@ class _MapScreenState extends State<MapScreen> {
                 subdomains: const ['a', 'b', 'c', 'd'],
                 userAgentPackageName: 'com.villagerun.app',
               ),
+              // 땅따먹기 폴리곤
               PolygonLayer(
                 polygons: _controller.completedTerritories
                     .map(_geoJsonToPolygon)
                     .whereType<Polygon>()
                     .toList(),
               ),
+              // 현재 위치 점 (대기 중)
               if (_controller.currentLocation != null && !_controller.isTracking)
                 MarkerLayer(
                   markers: [
                     Marker(
                       point: _controller.currentLocation!,
-                      child: const _LocationDot(),
+                      child: const _LocationDot(color: _green),
                     ),
                   ],
                 ),
+              // 경로 선
               if (_controller.currentPath.isNotEmpty) ...[
                 PolylineLayer(
                   polylines: [
                     Polyline(
                       points: _controller.currentPath,
-                      color: const Color(0xFFE87820),
-                      strokeWidth: 3.5,
-                      pattern: const StrokePattern.dotted(),
+                      color: isDrawing ? _drawColor : _green.withValues(alpha: 0.9),
+                      strokeWidth: isDrawing ? 5 : 3.5,
+                      strokeCap: StrokeCap.round,
+                      strokeJoin: StrokeJoin.round,
+                      pattern: isDrawing
+                          ? const StrokePattern.solid()
+                          : const StrokePattern.dotted(),
                     ),
                   ],
                 ),
@@ -100,7 +140,8 @@ class _MapScreenState extends State<MapScreen> {
                   markers: [
                     Marker(
                       point: _controller.currentPath.last,
-                      child: const _LocationDot(),
+                      child: _LocationDot(
+                          color: isDrawing ? _drawColor : _green),
                     ),
                   ],
                 ),
@@ -115,21 +156,19 @@ class _MapScreenState extends State<MapScreen> {
             right: 0,
             child: Container(
               padding: EdgeInsets.only(
-                top: top + 8,
-                left: 16,
-                right: 16,
-                bottom: 12,
-              ),
+                  top: top + 8, left: 16, right: 16, bottom: 12),
               color: Colors.white,
               child: Row(
                 children: [
                   Text(
-                    _controller.isTracking ? '● 기록 중' : '내땅내밟',
+                    _controller.isTracking
+                        ? (isDrawing ? '🎨 드로잉 중' : '● 기록 중')
+                        : '내땅내밟',
                     style: TextStyle(
                       fontSize: 17,
                       fontWeight: FontWeight.w800,
                       color: _controller.isTracking
-                          ? const Color(0xFFD94020)
+                          ? (isDrawing ? _drawColor : const Color(0xFFD94020))
                           : _textDark,
                       letterSpacing: -0.3,
                     ),
@@ -180,10 +219,9 @@ class _MapScreenState extends State<MapScreen> {
                   border: Border.all(color: _border),
                   boxShadow: const [
                     BoxShadow(
-                      color: Color(0x18000000),
-                      blurRadius: 10,
-                      offset: Offset(0, 3),
-                    ),
+                        color: Color(0x18000000),
+                        blurRadius: 10,
+                        offset: Offset(0, 3)),
                   ],
                 ),
                 child: const Icon(Icons.my_location_rounded,
@@ -201,9 +239,7 @@ class _MapScreenState extends State<MapScreen> {
               padding: EdgeInsets.fromLTRB(14, 14, 14, bottom + 20),
               decoration: const BoxDecoration(
                 color: Colors.white,
-                border: Border(
-                  top: BorderSide(color: _border),
-                ),
+                border: Border(top: BorderSide(color: _border)),
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -214,16 +250,20 @@ class _MapScreenState extends State<MapScreen> {
                   ],
                   _controller.isTracking
                       ? _MainButton(
-                          label: '완료',
-                          color: const Color(0xFFE04828),
-                          shadowColor: const Color(0x40E04828),
+                          label: isDrawing ? '드로잉 완료' : '완료',
+                          color: isDrawing
+                              ? _drawColor
+                              : const Color(0xFFE04828),
+                          shadowColor: isDrawing
+                              ? const Color(0x40E87820)
+                              : const Color(0x40E04828),
                           onTap: _controller.stopRun,
                         )
                       : _MainButton(
                           label: '달리기 시작',
                           color: _green,
                           shadowColor: const Color(0x405C9E3A),
-                          onTap: _controller.startRun,
+                          onTap: _onStartTap,
                         ),
                 ],
               ),
@@ -258,8 +298,11 @@ class _MapScreenState extends State<MapScreen> {
   }
 }
 
+// ── 위젯들 ──
+
 class _LocationDot extends StatelessWidget {
-  const _LocationDot();
+  final Color color;
+  const _LocationDot({required this.color});
 
   @override
   Widget build(BuildContext context) {
@@ -270,7 +313,7 @@ class _LocationDot extends StatelessWidget {
           width: 24,
           height: 24,
           decoration: BoxDecoration(
-            color: _green.withValues(alpha: 0.18),
+            color: color.withValues(alpha: 0.18),
             shape: BoxShape.circle,
           ),
         ),
@@ -278,12 +321,14 @@ class _LocationDot extends StatelessWidget {
           width: 12,
           height: 12,
           decoration: BoxDecoration(
-            color: _green,
+            color: color,
             shape: BoxShape.circle,
             border: Border.all(color: Colors.white, width: 2),
-            boxShadow: const [
+            boxShadow: [
               BoxShadow(
-                  color: Color(0x405C9E3A), blurRadius: 4, offset: Offset(0, 1)),
+                  color: color.withValues(alpha: 0.4),
+                  blurRadius: 4,
+                  offset: const Offset(0, 1)),
             ],
           ),
         ),
@@ -304,23 +349,24 @@ class _StatRow extends StatelessWidget {
       children: [
         _Chip(value: (dist / 1000).toStringAsFixed(2), unit: 'km'),
         const SizedBox(width: 8),
-        _Chip(value: _elapsed(controller), unit: 'time'),
+        _Chip(value: '${path.length}', unit: 'pts'),
         const SizedBox(width: 8),
-        _Chip(value: '—', unit: 'm²'),
+        _Chip(
+          value: controller.runMode == RunMode.drawing ? '🎨' : '🗺️',
+          unit: controller.runMode == RunMode.drawing ? 'draw' : 'map',
+        ),
       ],
     );
   }
 
-  double _calcDist(List points) {
-    if (points.length < 2) return 0;
+  double _calcDist(List<LatLng> pts) {
+    if (pts.length < 2) return 0;
     double d = 0;
-    for (int i = 1; i < points.length; i++) {
-      d += const Distance().as(LengthUnit.Meter, points[i - 1], points[i]);
+    for (int i = 1; i < pts.length; i++) {
+      d += const Distance().as(LengthUnit.Meter, pts[i - 1], pts[i]);
     }
     return d;
   }
-
-  String _elapsed(app_map.MapController c) => '—';
 }
 
 class _Chip extends StatelessWidget {
@@ -383,7 +429,10 @@ class _MainButton extends StatelessWidget {
           color: color,
           borderRadius: BorderRadius.circular(18),
           boxShadow: [
-            BoxShadow(color: shadowColor, blurRadius: 16, offset: const Offset(0, 4)),
+            BoxShadow(
+                color: shadowColor,
+                blurRadius: 16,
+                offset: const Offset(0, 4)),
           ],
         ),
         child: Text(
@@ -395,6 +444,127 @@ class _MainButton extends StatelessWidget {
             color: Colors.white,
             letterSpacing: 0.2,
           ),
+        ),
+      ),
+    );
+  }
+}
+
+// ── 모드 선택 바텀시트 ──
+class _ModeSheet extends StatelessWidget {
+  final void Function(RunMode) onSelect;
+  const _ModeSheet({required this.onSelect});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: _border),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const SizedBox(height: 12),
+          Container(
+            width: 36,
+            height: 4,
+            decoration: BoxDecoration(
+              color: _border,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(height: 16),
+          const Text(
+            '모드 선택',
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w900,
+              color: _textDark,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(14, 0, 14, 0),
+            child: Row(
+              children: [
+                Expanded(
+                  child: _ModeCard(
+                    emoji: '🗺️',
+                    title: '땅따먹기',
+                    desc: '달린 경로로\n내 땅을 만들어요',
+                    color: _green,
+                    onTap: () => onSelect(RunMode.territory),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: _ModeCard(
+                    emoji: '🎨',
+                    title: '드로잉',
+                    desc: '달리면서\n그림을 그려요',
+                    color: _drawColor,
+                    onTap: () => onSelect(RunMode.drawing),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 20),
+        ],
+      ),
+    );
+  }
+}
+
+class _ModeCard extends StatelessWidget {
+  final String emoji;
+  final String title;
+  final String desc;
+  final Color color;
+  final VoidCallback onTap;
+
+  const _ModeCard({
+    required this.emoji,
+    required this.title,
+    required this.desc,
+    required this.color,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 14),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.06),
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: color.withValues(alpha: 0.25)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(emoji, style: const TextStyle(fontSize: 28)),
+            const SizedBox(height: 10),
+            Text(title,
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w900,
+                  color: color,
+                )),
+            const SizedBox(height: 4),
+            Text(desc,
+                style: const TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  color: _textSoft,
+                  height: 1.4,
+                )),
+          ],
         ),
       ),
     );

@@ -1,0 +1,243 @@
+// flutter/lib/features/drawing/drawing_result_screen.dart
+import 'dart:ui' as ui;
+import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
+import 'package:share_plus/share_plus.dart';
+
+const _green = Color(0xFF5C9E3A);
+const _textDark = Color(0xFF1E2E14);
+const _textSoft = Color(0xFF8AAA70);
+const _border = Color(0xFFDCE8D0);
+const _greenLight = Color(0xFFEBF5E0);
+const _drawColor = Color(0xFFE87820);
+
+class DrawingResultScreen extends StatefulWidget {
+  final List<LatLng> path;
+
+  const DrawingResultScreen({super.key, required this.path});
+
+  @override
+  State<DrawingResultScreen> createState() => _DrawingResultScreenState();
+}
+
+class _DrawingResultScreenState extends State<DrawingResultScreen> {
+  final _repaintKey = GlobalKey();
+  bool _sharing = false;
+
+  double get _totalKm {
+    if (widget.path.length < 2) return 0;
+    double d = 0;
+    for (int i = 1; i < widget.path.length; i++) {
+      d += const Distance()
+          .as(LengthUnit.Meter, widget.path[i - 1], widget.path[i]);
+    }
+    return d / 1000;
+  }
+
+  CameraFit _cameraFit() {
+    final lats = widget.path.map((p) => p.latitude);
+    final lngs = widget.path.map((p) => p.longitude);
+    final sw = LatLng(lats.reduce((a, b) => a < b ? a : b),
+        lngs.reduce((a, b) => a < b ? a : b));
+    final ne = LatLng(lats.reduce((a, b) => a > b ? a : b),
+        lngs.reduce((a, b) => a > b ? a : b));
+    return CameraFit.bounds(
+      bounds: LatLngBounds(sw, ne),
+      padding: const EdgeInsets.all(60),
+    );
+  }
+
+  Future<void> _shareImage() async {
+    setState(() => _sharing = true);
+    try {
+      // 잠깐 기다려서 렌더 완료
+      await Future.delayed(const Duration(milliseconds: 100));
+      final boundary = _repaintKey.currentContext!.findRenderObject()
+          as RenderRepaintBoundary;
+      final image = await boundary.toImage(pixelRatio: 3.0);
+      final byteData =
+          await image.toByteData(format: ui.ImageByteFormat.png);
+      final bytes = byteData!.buffer.asUint8List();
+      await Share.shareXFiles(
+        [XFile.fromData(bytes, name: 'my_drawing.png', mimeType: 'image/png')],
+        text: '내땅내밟 드로잉 모드 🎨 ${_totalKm.toStringAsFixed(2)}km 달려서 그렸어요!',
+      );
+    } catch (e) {
+      debugPrint('share error: $e');
+    } finally {
+      if (mounted) setState(() => _sharing = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final top = MediaQuery.of(context).padding.top;
+    final bottom = MediaQuery.of(context).padding.bottom;
+
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: Stack(
+        children: [
+          // ── 지도 (캡처 대상) ──
+          Positioned.fill(
+            bottom: 130 + bottom,
+            child: RepaintBoundary(
+              key: _repaintKey,
+              child: FlutterMap(
+                options: MapOptions(
+                  initialCameraFit: _cameraFit(),
+                ),
+                children: [
+                  TileLayer(
+                    urlTemplate:
+                        'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
+                    subdomains: const ['a', 'b', 'c', 'd'],
+                    userAgentPackageName: 'com.villagerun.app',
+                  ),
+                  PolylineLayer(
+                    polylines: [
+                      Polyline(
+                        points: widget.path,
+                        color: _drawColor,
+                        strokeWidth: 5,
+                        strokeCap: StrokeCap.round,
+                        strokeJoin: StrokeJoin.round,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // ── 상단 바 ──
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: Container(
+              padding: EdgeInsets.only(
+                  top: top + 8, left: 16, right: 16, bottom: 12),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.92),
+              ),
+              child: Row(
+                children: [
+                  GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    child: Container(
+                      width: 34,
+                      height: 34,
+                      decoration: BoxDecoration(
+                        color: _greenLight,
+                        borderRadius: BorderRadius.circular(11),
+                        border: Border.all(color: _border),
+                      ),
+                      child: const Icon(Icons.arrow_back_ios_new_rounded,
+                          size: 15, color: _green),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  const Text(
+                    '드로잉 완료',
+                    style: TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w800,
+                      color: _textDark,
+                      letterSpacing: -0.3,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // ── 하단 패널 ──
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: Container(
+              padding: EdgeInsets.fromLTRB(14, 16, 14, bottom + 20),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                border: Border(top: BorderSide(color: _border)),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // 거리 표시
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        _totalKm.toStringAsFixed(2),
+                        style: const TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.w900,
+                          color: _textDark,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      const Text(
+                        'km',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: _textSoft,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+                  // 공유 버튼
+                  GestureDetector(
+                    onTap: _sharing ? null : _shareImage,
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(vertical: 15),
+                      decoration: BoxDecoration(
+                        color: _drawColor,
+                        borderRadius: BorderRadius.circular(18),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Color(0x40E87820),
+                            blurRadius: 16,
+                            offset: Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: _sharing
+                          ? const Center(
+                              child: SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2,
+                                ),
+                              ),
+                            )
+                          : const Text(
+                              '이미지로 공유',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w900,
+                                color: Colors.white,
+                                letterSpacing: 0.2,
+                              ),
+                            ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

@@ -4,6 +4,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 import '../tracking/tracking_service.dart';
 import '../tracking/territory_calculator.dart';
+import '../tracking/run_mode.dart';
 import '../history/run_repository.dart';
 
 class MapController extends ChangeNotifier {
@@ -13,11 +14,21 @@ class MapController extends ChangeNotifier {
   bool get isTracking => _trackingService.isTracking;
   List<LatLng> get currentPath => _trackingService.points;
 
+  RunMode _runMode = RunMode.territory;
+  RunMode get runMode => _runMode;
+
   List<String> _completedTerritories = [];
   List<String> get completedTerritories => List.unmodifiable(_completedTerritories);
 
   LatLng? _currentLocation;
   LatLng? get currentLocation => _currentLocation;
+
+  // 드로잉 모드 완료 후 결과 경로 (화면 전환용)
+  List<LatLng>? _completedDrawingPath;
+  List<LatLng>? get completedDrawingPath => _completedDrawingPath;
+  void clearDrawingPath() {
+    _completedDrawingPath = null;
+  }
 
   DateTime? _startedAt;
 
@@ -31,7 +42,6 @@ class MapController extends ChangeNotifier {
           permission == LocationPermission.deniedForever) {
         return;
       }
-
       final pos = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
       );
@@ -47,17 +57,34 @@ class MapController extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> startRun() async {
+  Future<void> startRun(RunMode mode) async {
+    _runMode = mode;
+    _completedDrawingPath = null;
     _startedAt = DateTime.now();
     _trackingService.startTracking();
     notifyListeners();
   }
 
+  /// 완료. 드로잉 모드면 Supabase 저장 없이 경로만 반환.
+  /// 땅따먹기 모드면 기존대로 저장.
   Future<void> stopRun() async {
     final path = _trackingService.stopTracking();
     notifyListeners();
-    if (path.length < 2) return;
 
+    if (_runMode == RunMode.drawing) {
+      if (path.length >= 2) {
+        _completedDrawingPath = path;
+        notifyListeners();
+      }
+      _startedAt = null;
+      return;
+    }
+
+    // 땅따먹기 모드
+    if (path.length < 2) {
+      _startedAt = null;
+      return;
+    }
     final territory = TerritoryCalculator.calculate(path);
     await _repository.saveRun(
       startedAt: _startedAt!,
@@ -65,7 +92,6 @@ class MapController extends ChangeNotifier {
       path: path,
       territory: territory,
     );
-
     await loadTerritories();
     _startedAt = null;
   }
