@@ -1,5 +1,6 @@
 // flutter/lib/features/tracking/tracking_service.dart
 import 'dart:async';
+import 'dart:io';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 import '../../core/constants.dart';
@@ -30,10 +31,23 @@ class TrackingService {
         return; // GPS unavailable, manual addPoint still works
       }
 
-      const settings = LocationSettings(
-        accuracy: LocationAccuracy.high,
-        distanceFilter: 3,
-      );
+      final LocationSettings settings;
+      if (Platform.isAndroid) {
+        settings = AndroidSettings(
+          accuracy: LocationAccuracy.high,
+          distanceFilter: 3,
+          foregroundNotificationConfig: const ForegroundNotificationConfig(
+            notificationTitle: '내땅내밟',
+            notificationText: '달리는 중... 위치를 기록하고 있어요',
+            enableWakeLock: true,
+          ),
+        );
+      } else {
+        settings = const LocationSettings(
+          accuracy: LocationAccuracy.high,
+          distanceFilter: 3,
+        );
+      }
 
       _positionSubscription = Geolocator.getPositionStream(
         locationSettings: settings,
