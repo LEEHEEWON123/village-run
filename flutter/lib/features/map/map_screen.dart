@@ -122,13 +122,17 @@ class _MapScreenState extends State<MapScreen> {
                     .whereType<Polygon>()
                     .toList(),
               ),
-              // 현재 위치 점 (대기 중)
-              if (_controller.currentLocation != null && !_controller.isTracking)
+              // 현재 위치 점 (대기 중 or 추적 중이지만 경로 아직 없을 때)
+              if (_controller.currentLocation != null &&
+                  (!_controller.isTracking || _controller.currentPath.isEmpty))
                 MarkerLayer(
                   markers: [
                     Marker(
                       point: _controller.currentLocation!,
-                      child: const _LocationDot(color: _green),
+                      child: _LocationDot(
+                          color: _controller.isTracking
+                              ? (isDrawing ? _drawColor : _green)
+                              : _green),
                     ),
                   ],
                 ),
