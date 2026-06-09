@@ -44,10 +44,19 @@ class _HistoryScreenState extends State<HistoryScreen> {
     return '${dt.month}월 ${dt.day}일';
   }
 
-  void _share() {
+  void _shareAll() {
     final userId = Supabase.instance.client.auth.currentUser!.id;
-    final url = '${AppConstants.shareBaseUrl}/$userId';
+    final url = AppConstants.shareUserUrl(userId);
     Share.share('내 나온김에 런 땅따먹기 현황 👀\n$url');
+  }
+
+  void _shareRun(RunRecord run) {
+    final userId = Supabase.instance.client.auth.currentUser!.id;
+    final url = AppConstants.shareRunUrl(userId, run.id);
+    final date = _formatDate(run.startedAt);
+    Share.share(
+      '$date 런 기록 — ${_formatDist(run.distanceM)}, ${_formatArea(run.areaM2)} 👀\n$url',
+    );
   }
 
   @override
@@ -103,7 +112,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                       ),
                       const Spacer(),
                       GestureDetector(
-                        onTap: _share,
+                        onTap: _shareAll,
                         child: Container(
                           width: 34,
                           height: 34,
@@ -230,6 +239,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                           formatDist: _formatDist,
                           formatArea: _formatArea,
                           formatDate: _formatDate,
+                          onShare: () => _shareRun(runs[i]),
                         ),
                       ),
                       childCount: runs.length,
@@ -249,12 +259,14 @@ class _RunCard extends StatelessWidget {
   final String Function(double) formatDist;
   final String Function(double) formatArea;
   final String Function(DateTime) formatDate;
+  final VoidCallback onShare;
 
   const _RunCard({
     required this.run,
     required this.formatDist,
     required this.formatArea,
     required this.formatDate,
+    required this.onShare,
   });
 
   @override
@@ -307,15 +319,19 @@ class _RunCard extends StatelessWidget {
               ],
             ),
           ),
-          Container(
-            width: 30,
-            height: 30,
-            decoration: BoxDecoration(
-              color: _card2,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: _border),
+          GestureDetector(
+            onTap: onShare,
+            child: Container(
+              width: 30,
+              height: 30,
+              decoration: BoxDecoration(
+                color: _card2,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: _border),
+              ),
+              child: const Icon(Icons.ios_share_rounded,
+                  size: 14, color: Colors.white),
             ),
-            child: const Icon(Icons.ios_share_rounded, size: 14, color: Colors.white),
           ),
         ],
       ),

@@ -57,7 +57,9 @@
       attribution: '© <a href="https://openstreetmap.org">OpenStreetMap</a> contributors'
     }).addTo(map);
 
-    const userId = location.pathname.split('/share/')[1];
+    const shareParts = location.pathname.replace(/^\/share\/?/, '').split('/').filter(Boolean);
+    const userId = shareParts[0] || '';
+    const focusRunId = shareParts[1] || '';
     const layers = {};
     const allBounds = [];
 
@@ -134,7 +136,13 @@
         list.appendChild(card);
       });
 
-      if (allBounds.length > 0) {
+      if (focusRunId) {
+        if (layers[focusRunId]) {
+          focusRun(focusRunId);
+        } else {
+          showError('해당 러닝 기록을 찾을 수 없습니다.');
+        }
+      } else if (allBounds.length > 0) {
         const combined = allBounds.reduce((a, b) => a.extend(b));
         map.fitBounds(combined, { padding: [20, 20] });
       }
