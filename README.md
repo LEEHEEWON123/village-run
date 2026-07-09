@@ -23,19 +23,20 @@ Supabase (PostgreSQL + PostGIS)
 
 ## 주요 기능
 
-- **GPS 땅따먹기** — 걸어간 경로를 실시간 점선으로 표시, 종료 시 영역 계산
+- **실시간 GPS 추적** — 걸어간 경로를 점선으로 표시, 위치 마커·카메라가 따라감
+- **실시간 땅따먹기** — 달리는 동안 점령 영역을 지도에 반투명 폴리곤으로 표시, 하단에 면적(m²) 실시간 갱신
 - **두 가지 영역 유형**
   - 루프(시작점 20m 이내 복귀): 내부 폴리곤 면적 전체
   - 직선: 경로 좌우 5m 버퍼 스트립
 - **Google 로그인** — Supabase Auth + Google OAuth
 - **기록 화면** — 일별 러닝 카드 (날짜, 이동 거리, 점령 면적)
-- **공유 링크** — `https://village-run-app.web.app/share/{userId}` 브라우저에서 바로 확인
+- **공유 링크** — `https://village-run-f512d.web.app/share/{userId}` 브라우저에서 바로 확인
 
 ## 기술 스택
 
 | 분류 | 기술 |
 |------|------|
-| 앱 | Flutter, flutter_map, geolocator, supabase_flutter, google_sign_in |
+| 앱 | Flutter, flutter_naver_map, geolocator, supabase_flutter, google_sign_in |
 | 백엔드 | Supabase (PostgreSQL + PostGIS) |
 | 공유 웹 | Firebase Hosting (Spark), HTML + Leaflet.js + OSM |
 
@@ -66,8 +67,10 @@ village-run/
 
 ```bash
 cp flutter/.env.example flutter/.env
-# SUPABASE_URL, SUPABASE_ANON_KEY 입력
+# SUPABASE_URL, SUPABASE_ANON_KEY, NAVER_MAP_CLIENT_ID 입력
 ```
+
+실시간 GPS 추적·지도 표시에는 `NAVER_MAP_CLIENT_ID`만 있어도 동작한다. 러닝 기록 저장·공유에는 Supabase 설정이 추가로 필요하다.
 
 ### 2. 의존성 설치
 
@@ -78,7 +81,7 @@ cd flutter && flutter pub get
 ### 3. 실행
 
 ```bash
-flutter run
+flutter run   # 실기기 권장 — 위치 권한 허용 필요
 ```
 
 ### 4. 공유 웹 배포 (Firebase Hosting)

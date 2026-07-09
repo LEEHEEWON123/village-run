@@ -44,7 +44,26 @@ class _MapScreenState extends State<MapScreen> {
     setState(() {});
     _syncOverlays();
 
-    // 내 위치 최초 이동
+    // 트래킹 중 → 카메라가 현재 위치 + 진행 방향으로 실시간 추적
+    if (_controller.isTracking && _controller.currentPath.isNotEmpty) {
+      final last = _controller.currentPath.last;
+      final bearing = _controller.currentBearing;
+      final update = bearing != null
+          ? NCameraUpdate.withParams(
+              target: NLatLng(last.latitude, last.longitude),
+              bearing: bearing,
+              zoom: 17,
+            )
+          : NCameraUpdate.scrollAndZoomTo(
+              target: NLatLng(last.latitude, last.longitude),
+              zoom: 17,
+            );
+      _naverController?.updateCamera(update);
+      _centeredOnUser = true;
+      return;
+    }
+
+    // 내 위치 최초 이동 (트래킹 전)
     if (!_centeredOnUser && _controller.currentLocation != null) {
       _centeredOnUser = true;
       _naverController?.updateCamera(
@@ -89,6 +108,20 @@ class _MapScreenState extends State<MapScreen> {
       if (polygon != null) await nc.addOverlay(polygon);
     }
 
+    final path = _controller.currentPath;
+
+    // 러닝 중 실시간 점령 영역 (땅따먹기 모드)
+    if (_controller.isTracking &&
+        _controller.runMode == RunMode.territory &&
+        path.length >= 2) {
+      final live = TerritoryCalculator.calculate(path);
+      if (live.geoJson.isNotEmpty) {
+        final livePolygon =
+            _geoJsonToNPolygon(live.geoJson, 'live_territory');
+        if (livePolygon != null) await nc.addOverlay(livePolygon);
+      }
+    }
+
     // 현재 위치 마커 (추적 전 or 경로 없을 때)
     final loc = _controller.currentLocation;
     if (loc != null &&
@@ -112,7 +145,6 @@ class _MapScreenState extends State<MapScreen> {
     }
 
     // 경로 선 + 끝점 마커
-    final path = _controller.currentPath;
     if (path.isNotEmpty) {
       final coords = path
           .map((p) => NLatLng(p.latitude, p.longitude))

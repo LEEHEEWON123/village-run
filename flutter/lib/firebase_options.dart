@@ -62,6 +62,6 @@ class DefaultFirebaseOptions {
     messagingSenderId: '546699141670',
     projectId: 'village-run-d90a9',
     storageBucket: 'village-run-d90a9.firebasestorage.app',
-    iosBundleId: 'com.villagerun.villageRun',
+    iosBundleId: 'com.villagerun.village_run',
   );
 }

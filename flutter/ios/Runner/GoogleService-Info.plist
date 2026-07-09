@@ -9,7 +9,7 @@
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>com.villagerun.villageRun</string>
+	<string>com.villagerun.village_run</string>
 	<key>PROJECT_ID</key>
 	<string>village-run-d90a9</string>
 	<key>STORAGE_BUCKET</key>

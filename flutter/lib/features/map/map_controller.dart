@@ -7,6 +7,11 @@ import '../tracking/territory_calculator.dart';
 import '../tracking/run_mode.dart';
 import '../history/run_repository.dart';
 
+double? _bearingBetween(LatLng a, LatLng b) {
+  return Geolocator.bearingBetween(
+      a.latitude, a.longitude, b.latitude, b.longitude);
+}
+
 class MapController extends ChangeNotifier {
   final _trackingService = TrackingService();
   final _repository = RunRepository();
@@ -22,6 +27,12 @@ class MapController extends ChangeNotifier {
 
   LatLng? _currentLocation;
   LatLng? get currentLocation => _currentLocation;
+
+  double? get currentBearing {
+    final path = _trackingService.points;
+    if (path.length < 2) return null;
+    return _bearingBetween(path[path.length - 2], path[path.length - 1]);
+  }
 
   // 드로잉 모드 완료 후 결과 경로 (화면 전환용)
   List<LatLng>? _completedDrawingPath;
@@ -61,6 +72,7 @@ class MapController extends ChangeNotifier {
     _runMode = mode;
     _completedDrawingPath = null;
     _startedAt = DateTime.now();
+    _trackingService.onPointsChanged = notifyListeners;
     _trackingService.startTracking();
     notifyListeners();
   }
@@ -68,6 +80,7 @@ class MapController extends ChangeNotifier {
   /// 완료. 드로잉 모드면 Supabase 저장 없이 경로만 반환.
   /// 땅따먹기 모드면 기존대로 저장.
   Future<void> stopRun() async {
+    _trackingService.onPointsChanged = null;
     final path = _trackingService.stopTracking();
     notifyListeners();
 

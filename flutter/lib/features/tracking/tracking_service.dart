@@ -10,6 +10,9 @@ class TrackingService {
   bool _isTracking = false;
   StreamSubscription<Position>? _positionSubscription;
 
+  /// Called when a new GPS point is recorded (for UI refresh).
+  void Function()? onPointsChanged;
+
   List<LatLng> get points => List.unmodifiable(_points);
   bool get isTracking => _isTracking;
 
@@ -65,12 +68,14 @@ class TrackingService {
 
     if (_points.isEmpty) {
       _points.add(point);
+      onPointsChanged?.call();
       return;
     }
 
     final dist = const Distance().as(LengthUnit.Meter, _points.last, point);
     if (dist >= AppConstants.minMoveMeters) {
       _points.add(point);
+      onPointsChanged?.call();
     }
   }
 
